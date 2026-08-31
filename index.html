@@ -679,6 +679,122 @@
 
     </div>
 
+    <!-- 10. DISCREET SYSTEM AUTHENTICATION MODAL -->
+    <div class="picker-modal-backdrop hidden" id="sysAuthBackdrop">
+        <div class="picker-modal" style="max-width: 380px;">
+            <div class="picker-modal-header" style="background: #151d22;">
+                <h3 style="font-size: 0.9rem; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px;">
+                    <span>🛡️</span> SYSTEM SECURITY GATE
+                </h3>
+                <button type="button" class="btn-close-drawer" id="btnCloseSysAuth">✕</button>
+            </div>
+            <div class="picker-modal-body" style="padding: 20px;">
+                <form id="sysAuthForm" onsubmit="return false;" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.68rem;">AUTHORIZATION ID</label>
+                        <input type="text" id="sysAuthUser" class="form-input" autocomplete="off" placeholder="Enter ID..." required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.68rem;">SECURITY KEY</label>
+                        <input type="password" id="sysAuthPass" class="form-input" autocomplete="off" placeholder="••••••••••••" required>
+                    </div>
+                    <div id="sysAuthError" style="color: #c94320; font-size: 0.74rem; font-weight: 700; display: none;">Invalid credentials. Access denied.</div>
+                    <button type="submit" class="btn-modal-action primary" style="width: 100%; padding: 10px; margin-top: 4px; font-weight: 800;">
+                        AUTHENTICATE & ENTER
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 11. DISCREET MASTER USER CONSOLE SCREEN -->
+    <div class="welcome-screen-wrapper hidden" id="masterConsoleScreen" style="z-index: 1200; overflow-y: auto; padding: 20px 12px;">
+        <div class="welcome-card" style="max-width: 1100px; width: 100%; min-height: 80vh; background: #182329; color: #ffffff; border: 1px solid rgba(255,255,255,0.18);">
+            <!-- Master Console Header -->
+            <div style="background: #10171b; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.12); flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="background: var(--color-terracotta); color: #fff; font-family: var(--font-heading); font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: var(--radius-pill);">MASTER CONSOLE</span>
+                    <h2 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 900; letter-spacing: 0.04em;">GLOBAL USER REGISTRY & DATA INTELLIGENCE</h2>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-modal-action" id="btnRefreshMasterData" style="color: #fff; border-color: rgba(255,255,255,0.3); font-size: 0.76rem; display: flex; align-items: center; gap: 4px;">
+                        <span>🔄</span> Refresh Cloud Data
+                    </button>
+                    <button type="button" class="btn-modal-action primary" id="btnExitMasterConsole" style="font-size: 0.76rem;">
+                        ✕ Exit to Main View
+                    </button>
+                </div>
+            </div>
+
+            <!-- Master Console Metrics Bar -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 18px 24px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 12px 16px;">
+                    <div style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.1em;">TOTAL REGISTERED USERS</div>
+                    <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: #ffffff;" id="metricTotalUsers">0</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 12px 16px;">
+                    <div style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.1em;">TOTAL TASKS CREATED</div>
+                    <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: #e9c46a;" id="metricTotalTasks">0</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 12px 16px;">
+                    <div style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.1em;">COMPLETED TASKS</div>
+                    <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: #2a9d8f;" id="metricCompletedTasks">0</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 12px 16px;">
+                    <div style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.1em;">GLOBAL COMPLETION RATE</div>
+                    <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: var(--color-terracotta);" id="metricAvgRate">0%</div>
+                </div>
+            </div>
+
+            <!-- Master Console Main Content (Users List + User Task Inspector) -->
+            <div style="padding: 20px 24px; display: grid; grid-template-columns: 320px 1fr; gap: 20px;" id="masterConsoleGrid">
+                <!-- Left: Users Directory -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-family: var(--font-heading); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.1em; color: rgba(255,255,255,0.7);">ALL USER PROFILES</span>
+                        <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5);" id="masterUserCountBadge">0 Users</span>
+                    </div>
+                    <input type="text" id="masterUserSearchInput" class="form-input" placeholder="🔍 Search username..." style="background: #233139; border-color: rgba(255,255,255,0.15); color: #fff; font-size: 0.8rem; padding: 7px 10px;">
+                    <div id="masterUsersList" style="display: flex; flex-direction: column; gap: 6px; max-height: 520px; overflow-y: auto; padding-right: 4px;">
+                        <!-- Dynamically populated user pills -->
+                    </div>
+                </div>
+
+                <!-- Right: Detailed User Inspector -->
+                <div style="background: #202d34; border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 14px;" id="masterUserInspector">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <div style="font-size: 0.68rem; font-weight: 800; color: var(--color-terracotta); letter-spacing: 0.1em;">SELECTED USER PROFILE</div>
+                            <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 800; color: #fff;" id="inspectUserName">Select a user</h3>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;" id="inspectUserStatsPill">
+                            <!-- User stats summary -->
+                        </div>
+                    </div>
+
+                    <!-- User Custom Plans Section -->
+                    <div>
+                        <span style="font-family: var(--font-heading); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; color: rgba(255,255,255,0.65);">USER CUSTOM PLANS / BLUEPRINTS</span>
+                        <div id="inspectUserPlans" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+                            <span style="font-size: 0.76rem; color: rgba(255,255,255,0.4);">No custom plans created.</span>
+                        </div>
+                    </div>
+
+                    <!-- User Month Tasks Section -->
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-family: var(--font-heading); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; color: rgba(255,255,255,0.65);">TASK RECORDS ACROSS MONTHS & DAYS</span>
+                            <span style="font-size: 0.7rem; color: #2a9d8f; font-weight: 700;" id="inspectTaskTotalBadge">0 Tasks</span>
+                        </div>
+                        <div id="inspectUserTasksContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; padding-right: 4px;">
+                            <!-- Dynamically populated tasks by day and month with actual notes -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase App & Realtime Database SDKs (Compat for Web & Mobile) -->
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>

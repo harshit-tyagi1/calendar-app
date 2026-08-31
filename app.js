@@ -28,9 +28,29 @@ const FIREBASE_CONFIG = {
     appId: "1:206555989510:web:ea74e87ad022475cc6a587"
 };
 
+// Discreet Cryptographic Security Hashes (SHA-256 - No plain text in source code)
+const _SYS_AUTH_HASH = {
+    u: '9c6fa0ceec6e88e7a4a55732f215d9cf1c0dc9ff724b546d2c46dd623018765e',
+    p: '27e7e4c4f688ed3fecbf40c54396992024503d1b9bca4773878c98f907ecfeb1'
+};
+
+async function computeDigestSha256(text) {
+    try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(text);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+        return '';
+    }
+}
+
 // Firebase Cloud Sync Service
 let firebaseDb = null;
 let activeFirebaseListenerRef = null;
+let masterCloudUsersData = {};
+let selectedMasterInspectUser = null;
 
 function initFirebaseSync() {
     if (typeof firebase !== 'undefined' && !firebaseDb) {
@@ -378,7 +398,32 @@ const DOM = {
     btnDrawerCarryAll: document.getElementById('btnDrawerCarryAll'),
     btnDrawerJumpYesterday: document.getElementById('btnDrawerJumpYesterday'),
 
-    mobileNavItems: document.querySelectorAll('.mobile-nav-item')
+    mobileNavItems: document.querySelectorAll('.mobile-nav-item'),
+
+    // Discreet System Security & Master Console
+    welcomeYearBadge: document.getElementById('welcomeYearBadge'),
+    sysAuthBackdrop: document.getElementById('sysAuthBackdrop'),
+    btnCloseSysAuth: document.getElementById('btnCloseSysAuth'),
+    sysAuthForm: document.getElementById('sysAuthForm'),
+    sysAuthUser: document.getElementById('sysAuthUser'),
+    sysAuthPass: document.getElementById('sysAuthPass'),
+    sysAuthError: document.getElementById('sysAuthError'),
+
+    masterConsoleScreen: document.getElementById('masterConsoleScreen'),
+    btnRefreshMasterData: document.getElementById('btnRefreshMasterData'),
+    btnExitMasterConsole: document.getElementById('btnExitMasterConsole'),
+    metricTotalUsers: document.getElementById('metricTotalUsers'),
+    metricTotalTasks: document.getElementById('metricTotalTasks'),
+    metricCompletedTasks: document.getElementById('metricCompletedTasks'),
+    metricAvgRate: document.getElementById('metricAvgRate'),
+    masterUserCountBadge: document.getElementById('masterUserCountBadge'),
+    masterUserSearchInput: document.getElementById('masterUserSearchInput'),
+    masterUsersList: document.getElementById('masterUsersList'),
+    inspectUserName: document.getElementById('inspectUserName'),
+    inspectUserStatsPill: document.getElementById('inspectUserStatsPill'),
+    inspectUserPlans: document.getElementById('inspectUserPlans'),
+    inspectTaskTotalBadge: document.getElementById('inspectTaskTotalBadge'),
+    inspectUserTasksContainer: document.getElementById('inspectUserTasksContainer')
 };
 
 /* ==========================================================================
@@ -2065,7 +2110,286 @@ function updateSoundUI() {
    Initialization & Event Listeners
    ========================================================================== */
 
+/* ==========================================================================
+   Discreet Master Console & Security Authentication
+   ========================================================================== */
+
+function openSysAuthModal() {
+    DOM.sysAuthUser.value = '';
+    DOM.sysAuthPass.value = '';
+    DOM.sysAuthError.style.display = 'none';
+    DOM.sysAuthBackdrop.classList.remove('hidden');
+    DOM.sysAuthUser.focus();
+    AudioService.triggerHaptic(20);
+}
+
+function closeSysAuthModal() {
+    DOM.sysAuthBackdrop.classList.add('hidden');
+    DOM.sysAuthUser.value = '';
+    DOM.sysAuthPass.value = '';
+}
+
+async function handleSysAuthSubmit() {
+    const u = DOM.sysAuthUser.value.trim();
+    const p = DOM.sysAuthPass.value;
+
+    const uHash = await computeDigestSha256(u);
+    const pHash = await computeDigestSha256(p);
+
+    if (uHash === _SYS_AUTH_HASH.u && pHash === _SYS_AUTH_HASH.p) {
+        closeSysAuthModal();
+        openMasterConsoleScreen();
+        AudioService.triggerHaptic(35);
+        showNotificationToast('System Authorization Confirmed. Welcome.');
+    } else {
+        DOM.sysAuthError.style.display = 'block';
+        AudioService.triggerHaptic(50);
+    }
+}
+
+function openMasterConsoleScreen() {
+    DOM.masterConsoleScreen.classList.remove('hidden');
+    fetchMasterCloudData();
+}
+
+function closeMasterConsoleScreen() {
+    DOM.masterConsoleScreen.classList.add('hidden');
+}
+
+function fetchMasterCloudData() {
+    initFirebaseSync();
+    if (!firebaseDb) {
+        alert('Firebase connection not available.');
+        return;
+    }
+
+    firebaseDb.ref('users').once('value').then((snapshot) => {
+        masterCloudUsersData = snapshot.val() || {};
+        renderMasterConsoleUI();
+    }).catch(err => {
+        console.warn('Master cloud fetch error:', err);
+    });
+}
+
+function renderMasterConsoleUI(searchQuery = '') {
+    const userKeys = Object.keys(masterCloudUsersData);
+    let totalTasksCount = 0;
+    let completedTasksCount = 0;
+
+    userKeys.forEach(userKey => {
+        const userData = masterCloudUsersData[userKey];
+        if (userData && userData.tasks) {
+            Object.values(userData.tasks).forEach(monthTasks => {
+                if (monthTasks && typeof monthTasks === 'object') {
+                    Object.values(monthTasks).forEach(dayList => {
+                        if (Array.isArray(dayList)) {
+                            totalTasksCount += dayList.length;
+                            completedTasksCount += dayList.filter(t => t.completed).length;
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    const completionRate = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
+
+    DOM.metricTotalUsers.textContent = userKeys.length;
+    DOM.metricTotalTasks.textContent = totalTasksCount;
+    DOM.metricCompletedTasks.textContent = completedTasksCount;
+    DOM.metricAvgRate.textContent = `${completionRate}%`;
+    DOM.masterUserCountBadge.textContent = `${userKeys.length} Registered Users`;
+
+    // Render filtered users list
+    DOM.masterUsersList.innerHTML = '';
+    const filteredKeys = userKeys.filter(k => k.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    if (filteredKeys.length === 0) {
+        DOM.masterUsersList.innerHTML = '<div style="font-size: 0.76rem; color: rgba(255,255,255,0.4); padding: 8px;">No users found.</div>';
+        return;
+    }
+
+    filteredKeys.forEach(userKey => {
+        const userData = masterCloudUsersData[userKey];
+        let userTasksTotal = 0;
+        let userCompleted = 0;
+
+        if (userData && userData.tasks) {
+            Object.values(userData.tasks).forEach(monthTasks => {
+                if (monthTasks && typeof monthTasks === 'object') {
+                    Object.values(monthTasks).forEach(dayList => {
+                        if (Array.isArray(dayList)) {
+                            userTasksTotal += dayList.length;
+                            userCompleted += dayList.filter(t => t.completed).length;
+                        }
+                    });
+                }
+            });
+        }
+
+        const card = document.createElement('div');
+        card.className = `master-user-pill ${selectedMasterInspectUser === userKey ? 'active' : ''}`;
+        card.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span>👤</span>
+                <span class="master-user-name">${userKey}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="master-user-task-count">${userCompleted}/${userTasksTotal}</span>
+                <span style="font-size: 0.7rem; color: var(--color-terracotta);">›</span>
+            </div>
+        `;
+
+        card.addEventListener('click', () => {
+            selectedMasterInspectUser = userKey;
+            renderMasterConsoleUI(DOM.masterUserSearchInput.value);
+            inspectMasterUserProfile(userKey);
+        });
+
+        DOM.masterUsersList.appendChild(card);
+    });
+
+    if (!selectedMasterInspectUser && filteredKeys.length > 0) {
+        selectedMasterInspectUser = filteredKeys[0];
+        inspectMasterUserProfile(selectedMasterInspectUser);
+    }
+}
+
+function inspectMasterUserProfile(userKey) {
+    const userData = masterCloudUsersData[userKey];
+    if (!userData) return;
+
+    DOM.inspectUserName.textContent = userKey;
+
+    let userTasksTotal = 0;
+    let userCompleted = 0;
+
+    DOM.inspectUserTasksContainer.innerHTML = '';
+
+    if (userData.tasks && typeof userData.tasks === 'object') {
+        const monthKeys = Object.keys(userData.tasks);
+
+        monthKeys.forEach(mKey => {
+            const [y, m] = mKey.split('_');
+            const monthName = MONTH_NAMES[parseInt(m, 10)] || mKey;
+
+            const monthGroup = document.createElement('div');
+            monthGroup.className = 'master-month-group';
+
+            const monthTitle = document.createElement('div');
+            monthTitle.className = 'master-month-title';
+            monthTitle.textContent = `📅 ${monthName} ${y}`;
+            monthGroup.appendChild(monthTitle);
+
+            const monthTasks = userData.tasks[mKey];
+            let hasAnyTasksInMonth = false;
+
+            if (monthTasks && typeof monthTasks === 'object') {
+                Object.keys(monthTasks).forEach(dayNum => {
+                    const dayList = monthTasks[dayNum];
+                    if (Array.isArray(dayList) && dayList.length > 0) {
+                        hasAnyTasksInMonth = true;
+                        const dayRow = document.createElement('div');
+                        dayRow.style.cssText = 'display: flex; flex-direction: column; gap: 4px; border-left: 2px solid rgba(222,130,100,0.4); padding-left: 8px; margin-bottom: 6px;';
+
+                        const dayLabel = document.createElement('strong');
+                        dayLabel.style.cssText = 'font-size: 0.72rem; color: rgba(255,255,255,0.7);';
+                        dayLabel.textContent = `Day ${dayNum < 10 ? '0' + dayNum : dayNum}`;
+                        dayRow.appendChild(dayLabel);
+
+                        dayList.forEach(t => {
+                            userTasksTotal++;
+                            if (t.completed) userCompleted++;
+
+                            const tItem = document.createElement('div');
+                            tItem.style.cssText = `display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; padding: 4px 6px; border-radius: 4px; background: ${t.completed ? 'rgba(42, 157, 143, 0.15)' : 'rgba(255,255,255,0.06)'};`;
+                            
+                            const left = document.createElement('div');
+                            left.style.cssText = 'display: flex; flex-direction: column; gap: 2px;';
+
+                            const title = document.createElement('span');
+                            title.style.cssText = t.completed ? 'text-decoration: line-through; color: rgba(255,255,255,0.6);' : 'color: #fff; font-weight: 600;';
+                            title.textContent = `${t.completed ? '✅' : '⚪'} ${t.text}`;
+                            left.appendChild(title);
+
+                            if (t.notes) {
+                                const noteBadge = document.createElement('span');
+                                noteBadge.style.cssText = 'font-size: 0.7rem; color: #e9c46a; font-weight: 700;';
+                                noteBadge.textContent = `📝 Actual: ${t.notes}`;
+                                left.appendChild(noteBadge);
+                            }
+
+                            const badge = document.createElement('span');
+                            badge.style.cssText = 'font-size: 0.65rem; background: rgba(255,255,255,0.12); padding: 2px 6px; border-radius: 999px;';
+                            badge.textContent = t.category || 'General';
+
+                            tItem.appendChild(left);
+                            tItem.appendChild(badge);
+                            dayRow.appendChild(tItem);
+                        });
+
+                        monthGroup.appendChild(dayRow);
+                    }
+                });
+            }
+
+            if (hasAnyTasksInMonth) {
+                DOM.inspectUserTasksContainer.appendChild(monthGroup);
+            }
+        });
+    }
+
+    if (userTasksTotal === 0) {
+        DOM.inspectUserTasksContainer.innerHTML = '<div style="font-size: 0.78rem; color: rgba(255,255,255,0.4); padding: 12px;">No tasks recorded yet for this user.</div>';
+    }
+
+    const rate = userTasksTotal > 0 ? Math.round((userCompleted / userTasksTotal) * 100) : 0;
+    DOM.inspectTaskTotalBadge.textContent = `${userCompleted}/${userTasksTotal} Tasks (${rate}% Done)`;
+    DOM.inspectUserStatsPill.innerHTML = `
+        <span style="background: var(--color-terracotta); color: #fff; font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 9999px;">${userTasksTotal} Total Tasks</span>
+        <span style="background: #2a9d8f; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 9999px;">${rate}% Completion</span>
+    `;
+
+    // Render Custom Plans
+    DOM.inspectUserPlans.innerHTML = '';
+    if (userData.plans && typeof userData.plans === 'object') {
+        const planList = Object.values(userData.plans);
+        planList.forEach(p => {
+            const pBadge = document.createElement('div');
+            pBadge.style.cssText = 'background: rgba(233, 196, 106, 0.2); border: 1px solid rgba(233, 196, 106, 0.4); color: #e9c46a; padding: 4px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700;';
+            pBadge.textContent = `📋 ${p.name} (${p.tasks ? p.tasks.length : 0} tasks)`;
+            DOM.inspectUserPlans.appendChild(pBadge);
+        });
+    } else {
+        DOM.inspectUserPlans.innerHTML = '<span style="font-size: 0.76rem; color: rgba(255,255,255,0.4);">No custom plans created.</span>';
+    }
+}
+
 function setupEventListeners() {
+    // Discreet Master Console & Security Authentication Trigger
+    if (DOM.welcomeYearBadge) {
+        DOM.welcomeYearBadge.style.cursor = 'pointer';
+        DOM.welcomeYearBadge.addEventListener('click', openSysAuthModal);
+    }
+    if (DOM.btnCloseSysAuth) DOM.btnCloseSysAuth.addEventListener('click', closeSysAuthModal);
+    if (DOM.sysAuthBackdrop) {
+        DOM.sysAuthBackdrop.addEventListener('click', (e) => {
+            if (e.target === DOM.sysAuthBackdrop) closeSysAuthModal();
+        });
+    }
+    if (DOM.sysAuthForm) DOM.sysAuthForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleSysAuthSubmit();
+    });
+
+    if (DOM.btnExitMasterConsole) DOM.btnExitMasterConsole.addEventListener('click', closeMasterConsoleScreen);
+    if (DOM.btnRefreshMasterData) DOM.btnRefreshMasterData.addEventListener('click', fetchMasterCloudData);
+    if (DOM.masterUserSearchInput) {
+        DOM.masterUserSearchInput.addEventListener('input', (e) => {
+            renderMasterConsoleUI(e.target.value);
+        });
+    }
+
     // Auth & Welcome
     DOM.btnGenerateUnique.addEventListener('click', () => {
         const uniqueName = generateUniqueUsername();
@@ -2342,3 +2666,4 @@ function initApp() {
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
+

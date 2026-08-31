@@ -2484,8 +2484,59 @@ body {
         flex: 1;
     }
 
-    .mobile-bottom-nav {
-        display: flex;
+/* Master Console Custom Card & Inspector Styles */
+.master-user-pill {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all var(--transition-fast);
+}
+
+.master-user-pill:hover,
+.master-user-pill.active {
+    background: rgba(222, 130, 100, 0.18);
+    border-color: var(--color-terracotta);
+}
+
+.master-user-name {
+    font-family: var(--font-heading);
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.master-user-task-count {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.master-month-group {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.master-month-title {
+    font-family: var(--font-heading);
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: var(--color-terracotta);
+    letter-spacing: 0.06em;
+}
+
+@media (max-width: 960px) {
+    #masterConsoleGrid {
+        grid-template-columns: 1fr !important;
     }
 }
 
