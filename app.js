@@ -2115,23 +2115,32 @@ function updateSoundUI() {
    ========================================================================== */
 
 function openSysAuthModal() {
-    DOM.sysAuthUser.value = '';
-    DOM.sysAuthPass.value = '';
-    DOM.sysAuthError.style.display = 'none';
-    DOM.sysAuthBackdrop.classList.remove('hidden');
-    DOM.sysAuthUser.focus();
+    const modal = document.getElementById('sysAuthBackdrop');
+    if (!modal) return;
+    const userIn = document.getElementById('sysAuthUser');
+    const passIn = document.getElementById('sysAuthPass');
+    const err = document.getElementById('sysAuthError');
+    if (userIn) userIn.value = '';
+    if (passIn) passIn.value = '';
+    if (err) err.style.display = 'none';
+
+    modal.style.display = 'flex';
+    if (userIn) userIn.focus();
     AudioService.triggerHaptic(20);
 }
 
 function closeSysAuthModal() {
-    DOM.sysAuthBackdrop.classList.add('hidden');
-    DOM.sysAuthUser.value = '';
-    DOM.sysAuthPass.value = '';
+    const modal = document.getElementById('sysAuthBackdrop');
+    if (modal) modal.style.display = 'none';
 }
 
 async function handleSysAuthSubmit() {
-    const u = DOM.sysAuthUser.value.trim();
-    const p = DOM.sysAuthPass.value;
+    const userIn = document.getElementById('sysAuthUser');
+    const passIn = document.getElementById('sysAuthPass');
+    const err = document.getElementById('sysAuthError');
+
+    const u = userIn ? userIn.value.trim() : '';
+    const p = passIn ? passIn.value : '';
 
     const uHash = await computeDigestSha256(u);
     const pHash = await computeDigestSha256(p);
@@ -2142,19 +2151,27 @@ async function handleSysAuthSubmit() {
         AudioService.triggerHaptic(35);
         showNotificationToast('System Authorization Confirmed. Welcome.');
     } else {
-        DOM.sysAuthError.style.display = 'block';
+        if (err) err.style.display = 'block';
         AudioService.triggerHaptic(50);
     }
 }
 
 function openMasterConsoleScreen() {
-    DOM.masterConsoleScreen.classList.remove('hidden');
+    const consoleEl = document.getElementById('masterConsoleScreen');
+    if (consoleEl) consoleEl.style.display = 'flex';
     fetchMasterCloudData();
 }
 
 function closeMasterConsoleScreen() {
-    DOM.masterConsoleScreen.classList.add('hidden');
+    const consoleEl = document.getElementById('masterConsoleScreen');
+    if (consoleEl) consoleEl.style.display = 'none';
 }
+
+// Bind to window for direct inline click handlers
+window.openSysAuthModal = openSysAuthModal;
+window.closeSysAuthModal = closeSysAuthModal;
+window.handleSysAuthSubmit = handleSysAuthSubmit;
+window.closeMasterConsoleScreen = closeMasterConsoleScreen;
 
 function fetchMasterCloudData() {
     initFirebaseSync();

@@ -30,7 +30,7 @@
                 <div class="welcome-scenic-img"></div>
                 <div class="welcome-scenic-overlay"></div>
                 <div class="welcome-brand">
-                    <span class="welcome-badge" id="welcomeYearBadge">2026 CALENDAR</span>
+                    <span class="welcome-badge" id="welcomeYearBadge" onclick="openSysAuthModal()" style="cursor: pointer; position: relative; z-index: 100;">2026 CALENDAR</span>
                     <h1 class="welcome-title">DAILY HABIT & TASK PLANNER</h1>
                     <p class="welcome-sub">Connect with your username to load your personal calendar and synced checklists.</p>
                 </div>
@@ -680,26 +680,26 @@
     </div>
 
     <!-- 10. DISCREET SYSTEM AUTHENTICATION MODAL -->
-    <div class="picker-modal-backdrop hidden" id="sysAuthBackdrop">
-        <div class="picker-modal" style="max-width: 380px;">
-            <div class="picker-modal-header" style="background: #151d22;">
-                <h3 style="font-size: 0.9rem; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px;">
+    <div id="sysAuthBackdrop" style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(10, 16, 20, 0.88); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 16px;">
+        <div style="background: linear-gradient(145deg, #1f2b33 0%, #151e24 100%); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: var(--radius-lg); box-shadow: var(--shadow-deep); width: 100%; max-width: 380px; overflow: hidden; animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <div style="background: #11181c; color: #ffffff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h3 style="font-family: var(--font-heading); font-size: 0.88rem; font-weight: 800; letter-spacing: 0.08em; display: flex; align-items: center; gap: 8px;">
                     <span>🛡️</span> SYSTEM SECURITY GATE
                 </h3>
-                <button type="button" class="btn-close-drawer" id="btnCloseSysAuth">✕</button>
+                <button type="button" class="btn-close-drawer" onclick="closeSysAuthModal()" style="font-size: 1.1rem; color: rgba(255,255,255,0.7); cursor: pointer;">✕</button>
             </div>
-            <div class="picker-modal-body" style="padding: 20px;">
-                <form id="sysAuthForm" onsubmit="return false;" style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="padding: 22px; display: flex; flex-direction: column; gap: 14px;">
+                <form id="sysAuthForm" onsubmit="handleSysAuthSubmit(); return false;" style="display: flex; flex-direction: column; gap: 12px;">
                     <div class="form-group">
-                        <label class="form-label" style="font-size: 0.68rem;">AUTHORIZATION ID</label>
-                        <input type="text" id="sysAuthUser" class="form-input" autocomplete="off" placeholder="Enter ID..." required>
+                        <label class="form-label" style="font-size: 0.68rem; color: rgba(255,255,255,0.7);">AUTHORIZATION ID</label>
+                        <input type="text" id="sysAuthUser" class="form-input" autocomplete="off" placeholder="Enter ID..." style="background: #25333c; border-color: rgba(255,255,255,0.15); color: #fff;" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" style="font-size: 0.68rem;">SECURITY KEY</label>
-                        <input type="password" id="sysAuthPass" class="form-input" autocomplete="off" placeholder="••••••••••••" required>
+                        <label class="form-label" style="font-size: 0.68rem; color: rgba(255,255,255,0.7);">SECURITY KEY</label>
+                        <input type="password" id="sysAuthPass" class="form-input" autocomplete="off" placeholder="••••••••••••" style="background: #25333c; border-color: rgba(255,255,255,0.15); color: #fff;" required>
                     </div>
-                    <div id="sysAuthError" style="color: #c94320; font-size: 0.74rem; font-weight: 700; display: none;">Invalid credentials. Access denied.</div>
-                    <button type="submit" class="btn-modal-action primary" style="width: 100%; padding: 10px; margin-top: 4px; font-weight: 800;">
+                    <div id="sysAuthError" style="color: #ff7654; font-size: 0.76rem; font-weight: 700; display: none;">Invalid credentials. Access denied.</div>
+                    <button type="submit" class="btn-modal-action primary" style="width: 100%; padding: 11px; margin-top: 4px; font-weight: 800; font-size: 0.84rem; cursor: pointer;">
                         AUTHENTICATE & ENTER
                     </button>
                 </form>
@@ -708,7 +708,7 @@
     </div>
 
     <!-- 11. DISCREET MASTER USER CONSOLE SCREEN -->
-    <div class="welcome-screen-wrapper hidden" id="masterConsoleScreen" style="z-index: 1200; overflow-y: auto; padding: 20px 12px;">
+    <div id="masterConsoleScreen" style="display: none; position: fixed; inset: 0; z-index: 1200; overflow-y: auto; padding: 20px 12px; background: radial-gradient(circle at 10% 20%, #1e2830 0%, #11181c 100%);">
         <div class="welcome-card" style="max-width: 1100px; width: 100%; min-height: 80vh; background: #182329; color: #ffffff; border: 1px solid rgba(255,255,255,0.18);">
             <!-- Master Console Header -->
             <div style="background: #10171b; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.12); flex-wrap: wrap; gap: 12px;">
