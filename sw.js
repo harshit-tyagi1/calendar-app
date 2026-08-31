@@ -3,11 +3,12 @@
  * Network-First Strategy for Instant Fresh Updates with Offline Fallback
  */
 
-const CACHE_NAME = 'cal-cloud-v8';
+const CACHE_NAME = 'cal-cloud-v9';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css',
+  './config.js',
   './app.js',
   './manifest.json',
   './assets/scenic_nature.jpg'

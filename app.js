@@ -4,21 +4,23 @@
  * Flexible Month Habit Plans (Optional / Blank Canvas or Multi-Plan)
  */
 
-// Application Constants & State
+/// Application Constants & State - Sourced directly from config.js
+const CFG = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : (typeof window !== 'undefined' && window.APP_CONFIG ? window.APP_CONFIG : {});
+
 const CONFIG = {
-    DEFAULT_YEAR: 2026,
-    DEFAULT_MONTH: 8, // September (0-indexed)
-    STORAGE_TASK_PREFIX: 'cal_user_tasks_',
-    PROFILES_KEY: 'cal_saved_profiles_list',
-    CURRENT_USER_KEY: 'cal_current_active_user',
-    USER_PLANS_PREFIX: 'cal_user_plans_',
-    SHARED_PLANS_KEY: 'cal_shared_plans_pool',
-    ACTIVE_PLANS_PREFIX: 'cal_active_month_plans_',
-    SOUND_KEY: 'cal_sound_pref'
+    DEFAULT_YEAR: (CFG.branding && CFG.branding.defaultYear) || 2026,
+    DEFAULT_MONTH: (CFG.branding && CFG.branding.defaultMonth !== undefined) ? CFG.branding.defaultMonth : 8,
+    STORAGE_TASK_PREFIX: (CFG.storageKeys && CFG.storageKeys.taskPrefix) || 'cal_user_tasks_',
+    PROFILES_KEY: (CFG.storageKeys && CFG.storageKeys.profilesKey) || 'cal_saved_profiles_list',
+    CURRENT_USER_KEY: (CFG.storageKeys && CFG.storageKeys.currentUserKey) || 'cal_current_active_user',
+    USER_PLANS_PREFIX: (CFG.storageKeys && CFG.storageKeys.userPlansPrefix) || 'cal_user_plans_',
+    SHARED_PLANS_KEY: (CFG.storageKeys && CFG.storageKeys.sharedPlansKey) || 'cal_shared_plans_pool',
+    ACTIVE_PLANS_PREFIX: (CFG.storageKeys && CFG.storageKeys.activePlansPrefix) || 'cal_active_month_plans_',
+    SOUND_KEY: (CFG.storageKeys && CFG.storageKeys.soundPrefKey) || 'cal_sound_pref'
 };
 
 // Google Firebase Configuration
-const FIREBASE_CONFIG = {
+const FIREBASE_CONFIG = CFG.firebase || {
     apiKey: "AIzaSyCqFA3TgrKIU-W9_LfMGgxcnIeiiwhocBg",
     authDomain: "calendar-planner-sync-9b2e0.firebaseapp.com",
     databaseURL: "https://calendar-planner-sync-9b2e0-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -29,7 +31,7 @@ const FIREBASE_CONFIG = {
 };
 
 // Discreet Cryptographic Security Hashes (SHA-256 - No plain text in source code)
-const _SYS_AUTH_HASH = {
+const _SYS_AUTH_HASH = (CFG.security && CFG.security.authHashes) || {
     u: '9c6fa0ceec6e88e7a4a55732f215d9cf1c0dc9ff724b546d2c46dd623018765e',
     p: '27e7e4c4f688ed3fecbf40c54396992024503d1b9bca4773878c98f907ecfeb1'
 };
@@ -66,13 +68,13 @@ function initFirebaseSync() {
     }
 }
 
-const MONTH_NAMES = [
+const MONTH_NAMES = (CFG.calendar && CFG.calendar.monthNames) || [
     'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
     'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
 ];
 
 // Curated Universal Observances & Special Days across months
-const ALL_OBSERVANCES = {
+const ALL_OBSERVANCES = CFG.observances || {
     '0_1': 'NEW YEAR’S DAY & GLOBAL PEACE',
     '0_15': 'WORLD RELIGION DAY',
     '0_24': 'INTERNATIONAL DAY OF EDUCATION',
@@ -122,7 +124,7 @@ const ALL_OBSERVANCES = {
     '11_25': 'CHRISTMAS & GOODWILL DAY'
 };
 
-const NOTE_PRESETS = {
+const NOTE_PRESETS = CFG.notePresets || {
     'wake': ['Woke up at 8:15 AM', 'Woke up at 8:30 AM', 'Woke up at 8:45 AM', 'Woke up at 9:00 AM', 'Woke up at 7:30 AM'],
     'water': ['Drank 1.5 Litres', 'Drank 2.0 Litres', 'Drank 2.5 Litres', 'Drank 3.0 Litres (Goal Met!)'],
     'steps': ['4,500 steps', '6,200 steps', '7,500 steps', '8,500 steps (Goal Met!)', '10,000+ steps'],
@@ -137,7 +139,7 @@ const NOTE_PRESETS = {
 /**
  * Built-in Standard Routine Plans (Optional Blueprints)
  */
-const DEFAULT_SYSTEM_PLANS = [
+const DEFAULT_SYSTEM_PLANS = CFG.systemPlans || [
     {
         id: 'plan_core_habits',
         name: 'Core Daily Routine & Wellness',
