@@ -1,6 +1,7 @@
 /**
  * Universal Calendar & Daily Task Planner
  * Google Firebase Realtime Cloud Synchronization Edition
+ * Flexible Month Habit Plans (Optional / Blank Canvas or Multi-Plan)
  */
 
 // Application Constants & State
@@ -52,48 +53,31 @@ const MONTH_NAMES = [
 
 // Curated Universal Observances & Special Days across months
 const ALL_OBSERVANCES = {
-    // January
     '0_1': 'NEW YEAR’S DAY & GLOBAL PEACE',
     '0_15': 'WORLD RELIGION DAY',
     '0_24': 'INTERNATIONAL DAY OF EDUCATION',
-
-    // February
     '1_4': 'WORLD CANCER AWARENESS DAY',
     '1_20': 'WORLD DAY OF SOCIAL JUSTICE',
     '1_21': 'INTERNATIONAL MOTHER LANGUAGE DAY',
-
-    // March
     '2_8': 'INTERNATIONAL WOMEN’S DAY',
     '2_20': 'INTERNATIONAL DAY OF HAPPINESS',
     '2_21': 'WORLD FORESTRY & POETRY DAY',
     '2_22': 'WORLD WATER DAY',
-
-    // April
     '3_7': 'WORLD HEALTH DAY',
     '3_22': 'EARTH DAY & CLIMATE ACTION',
     '3_23': 'WORLD BOOK & COPYRIGHT DAY',
-
-    // May
     '4_1': 'INTERNATIONAL WORKERS’ DAY',
     '4_15': 'INTERNATIONAL DAY OF FAMILIES',
     '4_21': 'WORLD CULTURAL DIVERSITY DAY',
     '4_31': 'WORLD NO TOBACCO DAY',
-
-    // June
     '5_5': 'WORLD ENVIRONMENT DAY',
     '5_8': 'WORLD OCEANS DAY',
     '5_21': 'INTERNATIONAL YOGA & MUSIC DAY',
-
-    // July
     '6_11': 'WORLD POPULATION DAY',
     '6_18': 'NELSON MANDELA INTERNATIONAL DAY',
     '6_30': 'INTERNATIONAL DAY OF FRIENDSHIP',
-
-    // August
     '7_12': 'INTERNATIONAL YOUTH DAY',
     '7_19': 'WORLD HUMANITARIAN DAY',
-
-    // September
     '8_3': 'WORLD WILDLIFE & NATURE DAY',
     '8_5': 'INTERNATIONAL DAY OF CHARITY',
     '8_8': 'INTERNATIONAL LITERACY DAY',
@@ -103,28 +87,21 @@ const ALL_OBSERVANCES = {
     '8_26': 'EARTH HOUR & SUSTAINABILITY DAY',
     '8_27': 'WORLD TOURISM DAY',
     '8_29': 'WORLD HEART DAY',
-
-    // October
     '9_2': 'INTERNATIONAL DAY OF NON-VIOLENCE',
     '9_5': 'WORLD TEACHERS’ DAY',
     '9_10': 'WORLD MENTAL HEALTH DAY',
     '9_16': 'WORLD FOOD DAY',
     '9_24': 'UNITED NATIONS DAY',
     '9_31': 'WORLD CITIES DAY',
-
-    // November
     '10_13': 'WORLD KINDNESS DAY',
     '10_16': 'INTERNATIONAL DAY FOR TOLERANCE',
     '10_20': 'WORLD CHILDREN’S DAY',
-
-    // December
     '11_1': 'WORLD AIDS DAY',
     '11_5': 'WORLD SOIL DAY',
     '11_10': 'HUMAN RIGHTS DAY',
     '11_25': 'CHRISTMAS & GOODWILL DAY'
 };
 
-// Smart preset suggestions for task notes based on keywords
 const NOTE_PRESETS = {
     'wake': ['Woke up at 8:15 AM', 'Woke up at 8:30 AM', 'Woke up at 8:45 AM', 'Woke up at 9:00 AM', 'Woke up at 7:30 AM'],
     'water': ['Drank 1.5 Litres', 'Drank 2.0 Litres', 'Drank 2.5 Litres', 'Drank 3.0 Litres (Goal Met!)'],
@@ -138,7 +115,7 @@ const NOTE_PRESETS = {
 };
 
 /**
- * Built-in Standard Routine Plans
+ * Built-in Standard Routine Plans (Optional Blueprints)
  */
 const DEFAULT_SYSTEM_PLANS = [
     {
@@ -258,11 +235,9 @@ const AudioService = {
 
 // DOM References
 const DOM = {
-    // Screens
     welcomeScreen: document.getElementById('welcomeScreen'),
     calendarApp: document.getElementById('calendarApp'),
 
-    // Auth Form
     authForm: document.getElementById('authForm'),
     authUsernameInput: document.getElementById('authUsernameInput'),
     btnGenerateUnique: document.getElementById('btnGenerateUnique'),
@@ -270,7 +245,6 @@ const DOM = {
     savedProfilesSection: document.getElementById('savedProfilesSection'),
     savedProfilesGrid: document.getElementById('savedProfilesGrid'),
 
-    // Left Hero
     heroMonthTitle: document.getElementById('heroMonthTitle'),
     heroMonthYearSubtitle: document.getElementById('heroMonthYearSubtitle'),
     heroYearVertical: document.getElementById('heroYearVertical'),
@@ -288,7 +262,6 @@ const DOM = {
     btnInstallPwa: document.getElementById('btnInstallPwa'),
     btnOpenPlansHero: document.getElementById('btnOpenPlansHero'),
 
-    // User Badge & Modal
     btnOpenUserModal: document.getElementById('btnOpenUserModal'),
     btnOpenUserModalTop: document.getElementById('btnOpenUserModalTop'),
     displayUserName: document.getElementById('displayUserName'),
@@ -306,7 +279,6 @@ const DOM = {
     btnCreateNewProfile: document.getElementById('btnCreateNewProfile'),
     btnLogoutUser: document.getElementById('btnLogoutUser'),
 
-    // Top Bar Navigation
     btnPrevDay: document.getElementById('btnPrevDay'),
     btnNextDay: document.getElementById('btnNextDay'),
     badgeDayNum: document.getElementById('badgeDayNum'),
@@ -315,7 +287,6 @@ const DOM = {
     btnOpenPlansTop: document.getElementById('btnOpenPlansTop'),
     btnYesterdayPeek: document.getElementById('btnYesterdayPeek'),
     
-    // Reset Menu
     btnResetMenu: document.getElementById('btnResetMenu'),
     resetDropdownMenu: document.getElementById('resetDropdownMenu'),
     btnResetToday: document.getElementById('btnResetToday'),
@@ -324,25 +295,21 @@ const DOM = {
     btnQuickRestoreToday: document.getElementById('btnQuickRestoreToday'),
     btnRestoreInEmpty: document.getElementById('btnRestoreInEmpty'),
 
-    // Calendar Grid & Tasks
     calendarGridSection: document.getElementById('calendarGridSection'),
     calendarDaysGrid: document.getElementById('calendarDaysGrid'),
     taskManagerSection: document.getElementById('taskManagerSection'),
 
-    // Rollover Banner
     rolloverBanner: document.getElementById('rolloverBanner'),
     rolloverTitle: document.getElementById('rolloverTitle'),
     rolloverDesc: document.getElementById('rolloverDesc'),
     btnCarryOver: document.getElementById('btnCarryOver'),
     btnDismissRollover: document.getElementById('btnDismissRollover'),
 
-    // Observance banner
     observanceCard: document.getElementById('observanceCard'),
     observanceDateLabel: document.getElementById('observanceDateLabel'),
     observanceTitle: document.getElementById('observanceTitle'),
     btnAddObservanceTask: document.getElementById('btnAddObservanceTask'),
 
-    // Task Form & Controls
     taskInputForm: document.getElementById('taskInputForm'),
     taskTextInput: document.getElementById('taskTextInput'),
     taskCategorySelect: document.getElementById('taskCategorySelect'),
@@ -350,7 +317,6 @@ const DOM = {
     taskItemsList: document.getElementById('taskItemsList'),
     emptyTasksState: document.getElementById('emptyTasksState'),
 
-    // Filters & Progress
     filterTabs: document.querySelectorAll('.filter-tab'),
     countAll: document.getElementById('countAll'),
     countActive: document.getElementById('countActive'),
@@ -358,11 +324,9 @@ const DOM = {
     dayProgressLabel: document.getElementById('dayProgressLabel'),
     dayProgressFill: document.getElementById('dayProgressFill'),
 
-    // Observances Reference List
     obsRefMonthHeader: document.getElementById('obsRefMonthHeader'),
     obsRefItems: document.getElementById('obsRefItems'),
 
-    // Month Picker Modal
     monthPickerBackdrop: document.getElementById('monthPickerBackdrop'),
     monthPickerModal: document.getElementById('monthPickerModal'),
     btnCloseMonthPicker: document.getElementById('btnCloseMonthPicker'),
@@ -371,7 +335,6 @@ const DOM = {
     pickerYearDisplay: document.getElementById('pickerYearDisplay'),
     pickerMonthsGrid: document.getElementById('pickerMonthsGrid'),
 
-    // Monthly Plans Modal
     plansModalBackdrop: document.getElementById('plansModalBackdrop'),
     plansModal: document.getElementById('plansModal'),
     btnClosePlansModal: document.getElementById('btnClosePlansModal'),
@@ -384,7 +347,6 @@ const DOM = {
     combineTasksCount: document.getElementById('combineTasksCount'),
     btnApplyPlansToMonth: document.getElementById('btnApplyPlansToMonth'),
 
-    // Create Plan Modal
     createPlanBackdrop: document.getElementById('createPlanBackdrop'),
     createPlanModal: document.getElementById('createPlanModal'),
     btnCloseCreatePlan: document.getElementById('btnCloseCreatePlan'),
@@ -395,14 +357,12 @@ const DOM = {
     btnCancelCreatePlan: document.getElementById('btnCancelCreatePlan'),
     btnSaveNewPlan: document.getElementById('btnSaveNewPlan'),
 
-    // Import Plan Modal
     importPlanBackdrop: document.getElementById('importPlanBackdrop'),
     btnCloseImportPlan: document.getElementById('btnCloseImportPlan'),
     importPlanCodeInput: document.getElementById('importPlanCodeInput'),
     btnCancelImport: document.getElementById('btnCancelImport'),
     btnSubmitImport: document.getElementById('btnSubmitImport'),
 
-    // Task Notes Modal
     noteModalBackdrop: document.getElementById('noteModalBackdrop'),
     btnCloseNoteModal: document.getElementById('btnCloseNoteModal'),
     noteTaskName: document.getElementById('noteTaskName'),
@@ -411,7 +371,6 @@ const DOM = {
     btnClearNote: document.getElementById('btnClearNote'),
     btnSaveNote: document.getElementById('btnSaveNote'),
 
-    // Yesterday Drawer
     yesterdayDrawerBackdrop: document.getElementById('yesterdayDrawerBackdrop'),
     yesterdayDateBadge: document.getElementById('yesterdayDateBadge'),
     yesterdayTaskList: document.getElementById('yesterdayTaskList'),
@@ -419,7 +378,6 @@ const DOM = {
     btnDrawerCarryAll: document.getElementById('btnDrawerCarryAll'),
     btnDrawerJumpYesterday: document.getElementById('btnDrawerJumpYesterday'),
 
-    // Mobile Bottom Nav
     mobileNavItems: document.querySelectorAll('.mobile-nav-item')
 };
 
@@ -510,7 +468,6 @@ function logoutUser() {
     state.currentUser = null;
     localStorage.removeItem(CONFIG.CURRENT_USER_KEY);
     
-    // Detach Firebase listeners
     if (activeFirebaseListenerRef) {
         try { activeFirebaseListenerRef.off(); } catch (e) {}
         activeFirebaseListenerRef = null;
@@ -534,7 +491,6 @@ function setupFirebaseRealtimeListeners() {
     const monthKey = `${state.currentYear}_${state.currentMonth}`;
     const taskPath = `users/${userPath}/tasks/${monthKey}`;
 
-    // Detach old listener if switching month/user
     if (activeFirebaseListenerRef) {
         try { activeFirebaseListenerRef.off(); } catch (e) {}
     }
@@ -552,7 +508,6 @@ function setupFirebaseRealtimeListeners() {
         }
     });
 
-    // Also sync shared plans pool from Firebase
     firebaseDb.ref('shared_plans').on('value', (snapshot) => {
         const cloudSharedPlans = snapshot.val();
         if (cloudSharedPlans && typeof cloudSharedPlans === 'object') {
@@ -571,8 +526,12 @@ function loadMonthTasks() {
     if (savedData) {
         state.tasks = JSON.parse(savedData);
     } else {
-        // Automatically generate month tasks from active selected plans
-        state.tasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth);
+        // If this month has active plans selected, populate with those plans; otherwise start blank!
+        if (state.selectedPlanIds && state.selectedPlanIds.length > 0) {
+            state.tasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth);
+        } else {
+            state.tasks = {};
+        }
         saveTasksToStorage();
     }
     updateUserUI();
@@ -585,7 +544,6 @@ function saveTasksToStorage() {
         const key = getUserStorageKey(state.currentUser, state.currentYear, state.currentMonth);
         localStorage.setItem(key, JSON.stringify(state.tasks));
 
-        // Push to Firebase Realtime Database
         if (firebaseDb) {
             const userPath = getFirebaseUserPath(state.currentUser);
             const monthKey = `${state.currentYear}_${state.currentMonth}`;
@@ -594,7 +552,6 @@ function saveTasksToStorage() {
             });
         }
 
-        // Broadcast to other open browser tabs
         if (state.syncChannel) {
             state.syncChannel.postMessage({
                 user: state.currentUser,
@@ -627,7 +584,6 @@ function updateHeroTypography() {
     DOM.statsMonthLabel.textContent = `${monthName} PROGRESS`;
     DOM.badgeMonthYear.textContent = `${monthName.substring(0, 3)} ${state.currentYear}`;
 
-    // Vertical year numbers
     DOM.heroYearVertical.innerHTML = '';
     const yearStr = String(state.currentYear);
     for (let char of yearStr) {
@@ -712,7 +668,7 @@ function getDayTasks(day) {
 }
 
 /* ==========================================================================
-   Monthly Plans & Habit Blueprints Engine
+   Monthly Plans & Habit Blueprints Engine (Optional / Blank Canvas Supported)
    ========================================================================== */
 
 function loadPlansLibrary() {
@@ -761,7 +717,6 @@ function saveUserPlan(newPlan) {
     userPlans.push(newPlan);
     localStorage.setItem(userStorageKey, JSON.stringify(userPlans));
 
-    // Save to Firebase Realtime Database
     if (firebaseDb) {
         if (!newPlan.isPersonal) {
             firebaseDb.ref(`shared_plans/${newPlan.id}`).set(newPlan).catch(e => {});
@@ -831,10 +786,15 @@ function loadActivePlansSelection() {
         try {
             state.selectedPlanIds = JSON.parse(saved);
         } catch (e) {
-            state.selectedPlanIds = ['plan_core_habits'];
+            state.selectedPlanIds = [];
         }
     } else {
-        state.selectedPlanIds = ['plan_core_habits'];
+        // Default September 2026 to Core habits; other months can start blank unless selected!
+        if (state.currentYear === CONFIG.DEFAULT_YEAR && state.currentMonth === CONFIG.DEFAULT_MONTH) {
+            state.selectedPlanIds = ['plan_core_habits'];
+        } else {
+            state.selectedPlanIds = [];
+        }
     }
 }
 
@@ -851,11 +811,19 @@ function saveActivePlansSelection() {
 function generateMonthTasksFromPlans(planIds, year, month) {
     const totalDays = getDaysInMonth(year, month);
     const monthTasks = {};
+
+    if (!planIds || planIds.length === 0) {
+        for (let day = 1; day <= totalDays; day++) {
+            monthTasks[day] = [];
+        }
+        return monthTasks;
+    }
+
     const selectedPlans = state.allPlans.filter(p => planIds.includes(p.id));
 
     for (let day = 1; day <= totalDays; day++) {
         const date = new Date(year, month, day);
-        const dayOfWeek = date.getDay(); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
+        const dayOfWeek = date.getDay();
         const isTuesday = (dayOfWeek === 2);
         const isWeekday = (dayOfWeek >= 1 && dayOfWeek <= 5);
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
@@ -887,7 +855,6 @@ function generateMonthTasksFromPlans(planIds, year, month) {
             });
         });
 
-        // Add monthly observance if present
         const obs = getMonthObservance(month, day);
         if (obs) {
             tasksForDay.push({
@@ -922,6 +889,31 @@ function closePlansModal() {
 function renderPlansListModal() {
     DOM.plansListGrid.innerHTML = '';
 
+    // 1. Option for "Blank Canvas / No Plan"
+    const blankCard = document.createElement('div');
+    const isBlank = state.selectedPlanIds.length === 0;
+    blankCard.className = `plan-card ${isBlank ? 'selected' : ''}`;
+    blankCard.innerHTML = `
+        <div class="plan-card-top">
+            <div class="plan-card-left">
+                <div class="plan-checkbox-mock">
+                    ${isBlank ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
+                </div>
+                <strong class="plan-card-title">🌱 Blank Month (No Routine Plan)</strong>
+            </div>
+            <span class="plan-privacy-badge personal">Freeform</span>
+        </div>
+        <p class="plan-card-desc">No automatic recurring habits. Create only your own custom, individual tasks for each day.</p>
+    `;
+    blankCard.addEventListener('click', () => {
+        state.selectedPlanIds = [];
+        AudioService.triggerHaptic(20);
+        renderPlansListModal();
+        updateCombineSummary();
+    });
+    DOM.plansListGrid.appendChild(blankCard);
+
+    // 2. Render all available habit plans
     state.allPlans.forEach(plan => {
         const isSelected = state.selectedPlanIds.includes(plan.id);
         const isSystem = DEFAULT_SYSTEM_PLANS.some(p => p.id === plan.id);
@@ -1020,22 +1012,38 @@ function renderPlansListModal() {
 
 function updateCombineSummary() {
     const count = state.selectedPlanIds.length;
-    DOM.combineBadge.textContent = `${count} ${count === 1 ? 'Plan' : 'Plans'} Active`;
-
-    const selectedPlans = state.allPlans.filter(p => state.selectedPlanIds.includes(p.id));
-    const uniqueTaskSet = new Set();
-    selectedPlans.forEach(p => p.tasks.forEach(t => uniqueTaskSet.add(t.text.toLowerCase())));
-
-    DOM.combineTasksCount.textContent = `Combines ${uniqueTaskSet.size} unique daily tasks for ${MONTH_NAMES[state.currentMonth]}`;
+    if (count === 0) {
+        DOM.combineBadge.textContent = 'Blank Canvas';
+        DOM.combineTasksCount.textContent = `No routine habit plans active. Create individual daily tasks as you go.`;
+    } else {
+        DOM.combineBadge.textContent = `${count} ${count === 1 ? 'Plan' : 'Plans'} Active`;
+        const selectedPlans = state.allPlans.filter(p => state.selectedPlanIds.includes(p.id));
+        const uniqueTaskSet = new Set();
+        selectedPlans.forEach(p => p.tasks.forEach(t => uniqueTaskSet.add(t.text.toLowerCase())));
+        DOM.combineTasksCount.textContent = `Combines ${uniqueTaskSet.size} unique daily tasks for ${MONTH_NAMES[state.currentMonth]}`;
+    }
 }
 
 function applySelectedPlansToCurrentMonth() {
+    saveActivePlansSelection();
+
     if (state.selectedPlanIds.length === 0) {
-        alert('Please select at least 1 plan to apply.');
+        // Keep existing user custom tasks or start blank
+        const totalDays = getDaysInMonth(state.currentYear, state.currentMonth);
+        const blankMonth = {};
+        for (let d = 1; d <= totalDays; d++) {
+            blankMonth[d] = [];
+        }
+        state.tasks = blankMonth;
+        saveTasksToStorage();
+
+        closePlansModal();
+        selectDay(state.selectedDay);
+        AudioService.triggerHaptic(40);
+        showNotificationToast(`Set ${MONTH_NAMES[state.currentMonth]} ${state.currentYear} to Blank Canvas (Custom Tasks Only)!`);
         return;
     }
 
-    saveActivePlansSelection();
     state.tasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth);
     saveTasksToStorage();
 
@@ -1908,7 +1916,7 @@ function updateMonthlyProgress() {
 }
 
 /* ==========================================================================
-   Mobile Touch Gestures
+   Mobile Touch Gestures & PWA
    ========================================================================== */
 
 function setupTouchGestures() {
@@ -1947,10 +1955,6 @@ function setupTouchGestures() {
         }
     }
 }
-
-/* ==========================================================================
-   PWA & Mobile Navigation
-   ========================================================================== */
 
 function setupPWA() {
     if ('serviceWorker' in navigator) {
@@ -2226,13 +2230,13 @@ function setupEventListeners() {
 
     DOM.btnResetToday.addEventListener('click', () => {
         DOM.resetDropdownMenu.classList.add('hidden');
-        const defaultDayTasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth)[state.selectedDay];
+        const defaultDayTasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth)[state.selectedDay] || [];
         state.tasks[state.selectedDay] = defaultDayTasks;
         saveTasksToStorage();
         renderTasks();
         renderCalendarGrid();
         updateMonthlyProgress();
-        showNotificationToast(`Restored defaults for Day ${state.selectedDay}!`);
+        showNotificationToast(`Reset Day ${state.selectedDay}!`);
     });
 
     DOM.btnResetAllMonth.addEventListener('click', () => {
@@ -2241,25 +2245,25 @@ function setupEventListeners() {
             state.tasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth);
             saveTasksToStorage();
             selectDay(state.selectedDay);
-            showNotificationToast(`Restored full month defaults!`);
+            showNotificationToast(`Reset full month!`);
         }
     });
 
     if (DOM.btnQuickRestoreToday) {
         DOM.btnQuickRestoreToday.addEventListener('click', () => {
-            const defaultDayTasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth)[state.selectedDay];
+            const defaultDayTasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth)[state.selectedDay] || [];
             state.tasks[state.selectedDay] = defaultDayTasks;
             saveTasksToStorage();
             renderTasks();
             renderCalendarGrid();
             updateMonthlyProgress();
-            showNotificationToast(`Restored defaults for Day ${state.selectedDay}!`);
+            showNotificationToast(`Reset Day ${state.selectedDay}!`);
         });
     }
 
     if (DOM.btnRestoreInEmpty) {
         DOM.btnRestoreInEmpty.addEventListener('click', () => {
-            const defaultDayTasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth)[state.selectedDay];
+            const defaultDayTasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth)[state.selectedDay] || [];
             state.tasks[state.selectedDay] = defaultDayTasks;
             saveTasksToStorage();
             renderTasks();
