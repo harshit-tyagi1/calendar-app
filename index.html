@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Universal Calendar & Daily Task Planner</title>
+    <meta name="description" content="Custom Universal Calendar & Task Planner with Monthly Plan Templates, Multi-Plan Combination, Multi-User Cloud Sync, and PWA support.">
+    
+    <!-- PWA & Mobile Web App Meta -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1c252b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TaskCalendar">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    <link rel="icon" type="image/png" href="assets/icon-192.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- 1. WELCOME & USER CREATION / LOGIN LANDING SCREEN -->
+    <div class="welcome-screen-wrapper" id="welcomeScreen">
+        <div class="welcome-card">
+            <div class="welcome-scenic-header">
+                <div class="welcome-scenic-img"></div>
+                <div class="welcome-scenic-overlay"></div>
+                <div class="welcome-brand">
+                    <span class="welcome-badge" id="welcomeYearBadge">2026 CALENDAR</span>
+                    <h1 class="welcome-title">DAILY HABIT & TASK PLANNER</h1>
+                    <p class="welcome-sub">Connect with your username to load your personal calendar and synced checklists.</p>
+                </div>
+            </div>
+
+            <div class="welcome-body">
+                <form class="auth-form" id="authForm" onsubmit="return false;">
+                    <label class="auth-label" for="authUsernameInput">ENTER YOUR USERNAME / SYNC KEY</label>
+                    <div class="auth-input-group">
+                        <span class="auth-input-icon">👤</span>
+                        <input 
+                            type="text" 
+                            id="authUsernameInput" 
+                            class="auth-text-input" 
+                            placeholder="e.g. Alex, HomePlanner, Sarah..." 
+                            autocomplete="off" 
+                            required 
+                        />
+                        <button type="button" class="btn-magic-unique" id="btnGenerateUnique" title="Auto-generate a unique username">
+                            <span>✨ Generate Unique</span>
+                        </button>
+                    </div>
+
+                    <div class="auth-actions">
+                        <button type="submit" class="btn-auth-submit" id="btnAuthSubmit">
+                            <span>Continue to Calendar</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Quick Saved Profiles on Device -->
+                <div class="saved-profiles-section" id="savedProfilesSection">
+                    <span class="saved-profiles-label">OR SELECT RECENT PROFILE:</span>
+                    <div class="saved-profiles-grid" id="savedProfilesGrid">
+                        <!-- Dynamic saved user buttons injected by JS -->
+                    </div>
+                </div>
+
+                <div class="auth-footer-notes">
+                    <small>🔒 Your tasks, plans, and habit records are stored specifically for your username.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN CALENDAR APPLICATION (Visible after login) -->
+    <div class="app-wrapper hidden" id="calendarApp">
+        <!-- Main Calendar Card Window -->
+        <main class="calendar-card" id="calendarCard">
+            
+            <!-- Left Side: Hero Poster & Atmosphere Panel -->
+            <aside class="hero-panel" id="heroPanel">
+                <div class="hero-scenic-frame">
+                    <div class="hero-scenic-overlay"></div>
+                    <div class="hero-arch-mask">
+                        <div class="hero-scenic-img"></div>
+                    </div>
+                </div>
+
+                <div class="hero-content">
+                    <header class="hero-header">
+                        <div class="hero-top-row">
+                            <div class="hero-month-selector-group">
+                                <h1 class="hero-month-title" id="heroMonthTitle">SEPTEMBER</h1>
+                            </div>
+                            <button class="btn-install-pwa hidden" id="btnInstallPwa" title="Install as App on Phone / PC">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <span>Install</span>
+                            </button>
+                        </div>
+
+                        <!-- Month Jump & Plans Bar in Hero -->
+                        <div class="hero-month-nav-row">
+                            <button class="hero-nav-arrow" id="btnHeroPrevMonth" title="Previous Month">‹</button>
+                            <button class="hero-month-jump-btn" id="btnOpenMonthPicker" title="Click to Jump Month / Year">
+                                <span id="heroMonthYearSubtitle">SEPTEMBER 2026</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </button>
+                            <button class="hero-nav-arrow" id="btnHeroNextMonth" title="Next Month">›</button>
+                        </div>
+                        
+                        <!-- Active User Pill & Logout Switcher -->
+                        <div class="active-user-chip" id="btnOpenUserModal" title="Click to Switch User / Sync Devices">
+                            <span class="user-chip-avatar">👤</span>
+                            <div class="user-chip-info">
+                                <span class="user-chip-name" id="displayUserName">User 1</span>
+                                <span class="user-chip-sync" id="syncStatusBadge">🟢 Sync Key: <span id="displaySyncKey">USER 1</span></span>
+                            </div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+
+                        <div class="hero-year-vertical" id="heroYearVertical" aria-label="Year 2026">
+                            <span>2</span>
+                            <span>0</span>
+                            <span>2</span>
+                            <span>6</span>
+                        </div>
+                    </header>
+
+                    <!-- Monthly Stats Widget -->
+                    <div class="hero-stats-card">
+                        <div class="stats-progress-ring-container">
+                            <svg class="progress-ring" width="56" height="56" viewBox="0 0 56 56">
+                                <circle class="progress-ring-bg" cx="28" cy="28" r="22" stroke-width="4"></circle>
+                                <circle class="progress-ring-fill" id="monthProgressRing" cx="28" cy="28" r="22" stroke-width="4"></circle>
+                            </svg>
+                            <span class="progress-ring-text" id="monthProgressPercent">0%</span>
+                        </div>
+                        <div class="stats-info">
+                            <span class="stats-label" id="statsMonthLabel">MONTHLY PROGRESS</span>
+                            <span class="stats-value" id="monthTasksRatio">0/0 Tasks Completed</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Tools & Navigation Footer -->
+                    <div class="hero-footer-tools">
+                        <button class="tool-btn highlight" id="btnOpenPlansHero" title="Monthly Habit Plans & Blueprints">
+                            <span>📋 Plans</span>
+                        </button>
+                        <button class="tool-btn" id="btnToday" title="Jump to Today / 1st of Month">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            <span>1st Day</span>
+                        </button>
+                        <button class="tool-btn" id="btnSoundToggle" title="Toggle audio feedback">
+                            <svg class="sound-icon-on" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                            <svg class="sound-icon-off hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                            <span id="soundStatusText">Sound</span>
+                        </button>
+                        <button class="tool-btn" id="btnPrint" title="Print or save PDF">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            <span>Print</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right Side: Calendar Grid, Observances & Daily Task Manager -->
+            <section class="main-panel" id="mainPanel">
+                
+                <!-- Top Navigation & Title Bar -->
+                <div class="calendar-top-bar">
+                    <div class="date-jump-navigator">
+                        <button class="nav-arrow-btn" id="btnPrevDay" title="Previous Day (Swipe Right / ← key)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <div class="current-selected-badge" id="currentSelectedBadge">
+                            <span class="badge-num" id="badgeDayNum">01</span>
+                            <div class="badge-texts">
+                                <span class="badge-dayname" id="badgeDayName">TUESDAY</span>
+                                <span class="badge-monthyear" id="badgeMonthYear">SEP 2026</span>
+                            </div>
+                        </div>
+                        <button class="nav-arrow-btn" id="btnNextDay" title="Next Day (Swipe Left / → key)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+
+                    <div class="top-meta-actions">
+                        <!-- Monthly Plans Button -->
+                        <button class="action-pill-btn highlight" id="btnOpenPlansTop" title="Monthly Habit Plans & Blueprints">
+                            <span>📋 Monthly Plans</span>
+                        </button>
+
+                        <button class="action-pill-btn" id="btnOpenUserModalTop" title="Switch User or Link Phone">
+                            <span class="user-chip-avatar-sm">👤</span>
+                            <span id="topBarUserName">User 1</span>
+                        </button>
+
+                        <button class="action-pill-btn secondary" id="btnYesterdayPeek" title="Quickly check or review tasks entered yesterday">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                            <span>Yesterday</span>
+                        </button>
+                        
+                        <!-- Reset Menu Dropdown -->
+                        <div class="reset-dropdown-container">
+                            <button class="action-pill-btn secondary" id="btnResetMenu" title="Reset tasks options">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+                                <span>Reset ▾</span>
+                            </button>
+                            <div class="reset-dropdown-menu hidden" id="resetDropdownMenu">
+                                <button class="reset-menu-item" id="btnResetToday">
+                                    <strong>🔄 Restore Today's Routine</strong>
+                                    <span>Reset <span id="resetDayLabel">Day 01</span> for <span class="reset-current-user">Current User</span></span>
+                                </button>
+                                <div class="reset-menu-divider"></div>
+                                <button class="reset-menu-item danger" id="btnResetAllMonth">
+                                    <strong>🗓️ Reset Entire Active Month</strong>
+                                    <span>Restore default tasks for this month</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Calendar Grid Section -->
+                <div class="calendar-grid-wrapper" id="calendarGridSection">
+                    <div class="calendar-weekdays-header">
+                        <span>S</span>
+                        <span>M</span>
+                        <span>T</span>
+                        <span>W</span>
+                        <span>T</span>
+                        <span>F</span>
+                        <span>S</span>
+                    </div>
+
+                    <div class="calendar-days-grid" id="calendarDaysGrid" role="grid" aria-label="Calendar Days Grid">
+                        <!-- Dynamic calendar day cells injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Divider with Day Summary -->
+                <div class="section-divider">
+                    <div class="divider-line"></div>
+                    <span class="divider-text" id="dividerText">DAILY ROUTINE & DETAILS (TAP 💬 TO LOG ACTUALS)</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <!-- Smart Notification / Rollover Banner -->
+                <div class="rollover-banner hidden" id="rolloverBanner">
+                    <div class="rollover-banner-content">
+                        <div class="banner-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 12 12 14 14"></polyline></svg>
+                        </div>
+                        <div class="banner-text">
+                            <strong id="rolloverTitle">Unfinished tasks from yesterday</strong>
+                            <p id="rolloverDesc">You have pending items. Would you like to carry them over to today?</p>
+                        </div>
+                    </div>
+                    <div class="rollover-actions">
+                        <button class="btn-banner-action primary" id="btnCarryOver">Carry Over to Today</button>
+                        <button class="btn-banner-action ghost" id="btnDismissRollover" title="Dismiss">Dismiss</button>
+                    </div>
+                </div>
+
+                <!-- Active Date Task Manager & Events Area -->
+                <div class="task-manager-container" id="taskManagerSection">
+                    
+                    <!-- Observance / Awareness Event Banner for the Day -->
+                    <div class="observance-card" id="observanceCard">
+                        <div class="observance-tag">
+                            <span class="observance-dot"></span>
+                            <span id="observanceDateLabel">08.</span>
+                            <strong id="observanceTitle">WORLD OBSERVANCE DAY</strong>
+                        </div>
+                        <button class="btn-add-as-task" id="btnAddObservanceTask" title="Add this event to today's task checklist">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Add as Task</span>
+                        </button>
+                    </div>
+
+                    <!-- Task Input Form -->
+                    <form class="task-input-form" id="taskInputForm" onsubmit="return false;">
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                class="task-text-input" 
+                                id="taskTextInput" 
+                                placeholder="Add a new custom task for today... (Enter)" 
+                                autocomplete="off"
+                                required 
+                            />
+                            <div class="input-controls">
+                                <select class="category-select" id="taskCategorySelect" title="Select Category/Priority">
+                                    <option value="Health">Health</option>
+                                    <option value="Personal">Personal</option>
+                                    <option value="Work">Work</option>
+                                    <option value="Urgent">🔥 Urgent</option>
+                                    <option value="General">General</option>
+                                </select>
+                                <button type="submit" class="btn-add-task" id="btnAddTask" title="Add Task">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <span>Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Filter Tabs, Daily Progress & Quick Restore Link -->
+                    <div class="task-list-header">
+                        <div class="task-filters">
+                            <button class="filter-tab active" data-filter="all">All (<span id="countAll">0</span>)</button>
+                            <button class="filter-tab" data-filter="active">Pending (<span id="countActive">0</span>)</button>
+                            <button class="filter-tab" data-filter="completed">Completed (<span id="countCompleted">0</span>)</button>
+                        </div>
+                        
+                        <div class="task-header-right">
+                            <button class="btn-quick-restore-today" id="btnQuickRestoreToday" title="Reset only today's tasks back to the active month's plan routine">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                                <span>Restore Defaults</span>
+                            </button>
+                            <div class="day-task-progress">
+                                <span id="dayProgressLabel">0% Done</span>
+                                <div class="day-progress-bar">
+                                    <div class="day-progress-fill" id="dayProgressFill" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Task Items List -->
+                    <div class="task-items-list" id="taskItemsList" role="list">
+                        <!-- Dynamic task items injected by JS -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-tasks-state hidden" id="emptyTasksState">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                        <p>All tasks cleared for this day.</p>
+                        <button class="btn-restore-in-empty" id="btnRestoreInEmpty">
+                            <span>🔄 Click here to Restore Default Daily Routine</span>
+                        </button>
+                    </div>
+
+                    <!-- All Observances Reference List -->
+                    <div class="observances-reference-list" id="observancesReferenceList">
+                        <div class="obs-ref-header">
+                            <span id="obsRefMonthHeader">SPECIAL DAYS & OBSERVANCES</span>
+                            <span class="obs-ref-hint">Tap any date to jump</span>
+                        </div>
+                        <div class="obs-ref-items" id="obsRefItems">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+
+        <!-- ============================================================
+             3. MONTH & YEAR QUICK JUMP PICKER MODAL
+             ============================================================ -->
+        <div class="picker-modal-backdrop hidden" id="monthPickerBackdrop">
+            <div class="picker-modal" id="monthPickerModal">
+                <div class="picker-modal-header">
+                    <h3>🗓️ Jump to Month & Year</h3>
+                    <button class="btn-close-drawer" id="btnCloseMonthPicker" title="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="picker-modal-body">
+                    <div class="year-stepper-row">
+                        <button class="btn-year-step" id="btnYearStepPrev">‹</button>
+                        <strong class="year-display" id="pickerYearDisplay">2026</strong>
+                        <button class="btn-year-step" id="btnYearStepNext">›</button>
+                    </div>
+                    <div class="months-grid" id="pickerMonthsGrid">
+                        <!-- 12 months buttons injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             4. MONTHLY PLANS & BLUEPRINTS MANAGER MODAL
+             ============================================================ -->
+        <div class="plans-modal-backdrop hidden" id="plansModalBackdrop">
+            <div class="plans-modal" id="plansModal">
+                <div class="plans-modal-header">
+                    <div class="modal-header-title">
+                        <span class="modal-header-icon">📋</span>
+                        <div>
+                            <h3>Monthly Habit Plans & Blueprints</h3>
+                            <p class="plans-modal-subtitle">Combine multiple plans to set your default routine for <strong id="plansTargetMonthLabel">September 2026</strong></p>
+                        </div>
+                    </div>
+                    <button class="btn-close-drawer" id="btnClosePlansModal" title="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+
+                <div class="plans-modal-body">
+                    <!-- Top Action Bar -->
+                    <div class="plans-top-actions">
+                        <button class="btn-plans-action primary" id="btnOpenCreatePlan">
+                            <span>➕ Create New Plan</span>
+                        </button>
+                        <button class="btn-plans-action secondary" id="btnOpenImportPlan">
+                            <span>📥 Import Shared Plan</span>
+                        </button>
+                    </div>
+
+                    <!-- Available Plans List -->
+                    <div class="plans-list-container">
+                        <span class="plans-list-title">SELECT PLANS TO COMBINE FOR THIS MONTH:</span>
+                        <div class="plans-list-grid" id="plansListGrid">
+                            <!-- Injected plan cards -->
+                        </div>
+                    </div>
+
+                    <!-- Multi-Plan Merged Summary -->
+                    <div class="plans-combine-bar" id="plansCombineBar">
+                        <div class="combine-info">
+                            <span class="combine-badge" id="combineBadge">1 Plan Active</span>
+                            <p id="combineTasksCount">Contains 7 default daily tasks</p>
+                        </div>
+                        <button class="btn-apply-plans" id="btnApplyPlansToMonth">
+                            <span>🚀 Apply to Active Month</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             5. CREATE / EDIT CUSTOM PLAN MODAL
+             ============================================================ -->
+        <div class="create-plan-backdrop hidden" id="createPlanBackdrop">
+            <div class="create-plan-modal" id="createPlanModal">
+                <div class="create-plan-header">
+                    <h3 id="createPlanModalTitle">✨ Create New Monthly Plan</h3>
+                    <button class="btn-close-drawer" id="btnCloseCreatePlan" title="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="create-plan-body">
+                    <form class="plan-form" id="planForm" onsubmit="return false;">
+                        <div class="form-group">
+                            <label class="form-label" for="planNameInput">PLAN NAME</label>
+                            <input type="text" id="planNameInput" class="form-input" placeholder="e.g. Marathon Training, Student Focus, Morning Zen" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="planDescInput">DESCRIPTION / GOAL (OPTIONAL)</label>
+                            <input type="text" id="planDescInput" class="form-input" placeholder="e.g. 30-day challenge focusing on physical and mental energy" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">PRIVACY & SHARING</label>
+                            <div class="privacy-toggle-row">
+                                <label class="privacy-option">
+                                    <input type="radio" name="planPrivacy" value="personal" checked />
+                                    <span>🔒 Personal (Only for my user)</span>
+                                </label>
+                                <label class="privacy-option">
+                                    <input type="radio" name="planPrivacy" value="shared" />
+                                    <span>🌐 Shared (Available to all users)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="task-builder-header">
+                                <label class="form-label">PLAN TASKS & RECURRENCE</label>
+                                <button type="button" class="btn-add-builder-row" id="btnAddPlanTaskRow">
+                                    <span>➕ Add Task</span>
+                                </button>
+                            </div>
+                            <div class="task-builder-list" id="taskBuilderList">
+                                <!-- Dynamic task rows injected by JS -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="create-plan-footer">
+                    <button class="btn-modal-action secondary" id="btnCancelCreatePlan">Cancel</button>
+                    <button class="btn-modal-action primary" id="btnSaveNewPlan">Save Plan Blueprint</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             6. IMPORT SHARED PLAN MODAL
+             ============================================================ -->
+        <div class="import-modal-backdrop hidden" id="importPlanBackdrop">
+            <div class="import-modal" id="importPlanModal">
+                <div class="import-modal-header">
+                    <h3>📥 Import Shared Plan</h3>
+                    <button class="btn-close-drawer" id="btnCloseImportPlan" title="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="import-modal-body">
+                    <p class="import-desc">Paste a Plan Share Code sent to you by another user:</p>
+                    <textarea id="importPlanCodeInput" class="import-textarea" placeholder="Paste Plan Code here..." rows="4"></textarea>
+                </div>
+                <div class="import-modal-footer">
+                    <button class="btn-modal-action secondary" id="btnCancelImport">Cancel</button>
+                    <button class="btn-modal-action primary" id="btnSubmitImport">Import & Add to Library</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             7. TASK NOTE / ACTUAL DETAILS MODAL
+             ============================================================ -->
+        <div class="note-modal-backdrop hidden" id="noteModalBackdrop">
+            <div class="note-modal" id="noteModal">
+                <div class="note-modal-header">
+                    <div class="modal-header-title">
+                        <span class="modal-header-icon">📝</span>
+                        <h3>Log Actuals & Task Details</h3>
+                    </div>
+                    <button class="btn-close-drawer" id="btnCloseNoteModal" title="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="note-modal-body">
+                    <div class="note-task-preview">
+                        <span class="note-task-label">Task:</span>
+                        <strong class="note-task-name" id="noteTaskName">Wake up by 8 AM</strong>
+                    </div>
+                    <div class="note-input-group">
+                        <label for="taskNoteInput" class="note-field-label">Actual Result / Detail Note:</label>
+                        <textarea 
+                            id="taskNoteInput" 
+                            class="note-textarea" 
+                            placeholder="e.g. Woke up at 8:30 AM, or Drank 2.5 litres, or 6,500 steps taken..."
+                            rows="3"
+                        ></textarea>
+                    </div>
+                    <div class="note-quick-presets" id="noteQuickPresets">
+                        <!-- Smart preset suggestion chips injected dynamically -->
+                    </div>
+                </div>
+                <div class="note-modal-footer">
+                    <button class="btn-modal-action secondary" id="btnClearNote">Remove Note</button>
+                    <button class="btn-modal-action primary" id="btnSaveNote">Save Detail</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             8. MULTI-USER & DEVICE SYNC MODAL
+             ============================================================ -->
+        <div class="user-modal-backdrop hidden" id="userModalBackdrop">
+            <div class="user-modal" id="userModal">
+                <div class="user-modal-header">
+                    <div class="modal-header-title">
+                        <span class="modal-header-icon">👥</span>
+                        <h3>User Account & Device Sync</h3>
+                    </div>
+                    <button class="btn-close-drawer" id="btnCloseUserModal" title="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+
+                <div class="user-modal-body">
+                    <div class="sync-info-box">
+                        <h4>📱 Sync Phone & PC in Real-Time</h4>
+                        <p>Use the same <strong>Sync Key</strong> on both your phone and PC so your tasks stay updated everywhere automatically.</p>
+                        <div class="sync-key-display-box">
+                            <span class="sync-key-label">Your Sync Key:</span>
+                            <strong class="sync-key-code" id="currentSyncKeyCode">USER 1</strong>
+                            <button class="btn-copy-key" id="btnCopySyncKey" title="Copy Key">Copy</button>
+                        </div>
+                    </div>
+
+                    <!-- Switch or Join User Account -->
+                    <div class="user-section">
+                        <h4>👤 Switch User Profile / Enter Sync Key</h4>
+                        <p class="user-section-sub">Each user or key has completely independent tasks, plans, and calendar records.</p>
+                        
+                        <form class="user-switch-form" id="userSwitchForm" onsubmit="return false;">
+                            <div class="input-user-row">
+                                <input 
+                                    type="text" 
+                                    id="inputUserKey" 
+                                    placeholder="Enter Sync Key (e.g. Alex, Home, Work)" 
+                                    autocomplete="off"
+                                    required 
+                                />
+                                <button type="submit" class="btn-switch-user" id="btnSwitchUser">Switch / Connect</button>
+                            </div>
+                        </form>
+
+                        <div class="quick-profiles-list">
+                            <span class="quick-profiles-title">Saved Profiles on this Device:</span>
+                            <div class="profiles-pills-row" id="profilesPillsRow">
+                                <!-- Dynamic profile pills injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="user-modal-footer">
+                    <button class="btn-modal-action danger" id="btnLogoutUser">
+                        <span>🚪 Switch / Log Out User</span>
+                    </button>
+                    <button class="btn-modal-action secondary" id="btnCreateNewProfile">
+                        <span>➕ New Profile</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             9. YESTERDAY'S QUICK REVIEW DRAWER
+             ============================================================ -->
+        <div class="yesterday-drawer-backdrop hidden" id="yesterdayDrawerBackdrop">
+            <div class="yesterday-drawer" id="yesterdayDrawer">
+                <div class="drawer-header">
+                    <div class="drawer-title-group">
+                        <span class="drawer-badge" id="yesterdayDateBadge">DAY 01</span>
+                        <h3>Yesterday's Task Checklist</h3>
+                    </div>
+                    <button class="btn-close-drawer" id="btnCloseYesterdayDrawer" title="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="drawer-content">
+                    <p class="drawer-subtitle">You can check or uncheck tasks from yesterday directly here, or carry over any unfinished items to today.</p>
+                    <div class="drawer-task-list" id="yesterdayTaskList">
+                        <!-- Injected yesterday tasks -->
+                    </div>
+                    <div class="drawer-actions">
+                        <button class="btn-drawer-action primary" id="btnDrawerCarryAll">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            <span>Copy Incomplete Tasks to Today</span>
+                        </button>
+                        <button class="btn-drawer-action secondary" id="btnDrawerJumpYesterday">
+                            <span>Jump to this Date</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             10. MOBILE BOTTOM NAVIGATION BAR
+             ============================================================ -->
+        <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile Navigation">
+            <button class="mobile-nav-item active" id="mNavTasks" data-view="tasks">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <span>Tasks</span>
+            </button>
+            <button class="mobile-nav-item" id="mNavCalendar" data-view="calendar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>Calendar</span>
+            </button>
+            <button class="mobile-nav-item" id="mNavPlans" data-view="plans">
+                <span style="font-size: 16px;">📋</span>
+                <span>Plans</span>
+            </button>
+            <button class="mobile-nav-item" id="mNavUser" data-view="user">
+                <span style="font-size: 16px;">👥</span>
+                <span>User</span>
+            </button>
+            <button class="mobile-nav-item" id="mNavYesterday" data-view="yesterday">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                <span>Yesterday</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

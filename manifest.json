@@ -1,0 +1,25 @@
+{
+  "name": "September 2026 Calendar & Task Planner",
+  "short_name": "Sep 2026",
+  "description": "Custom September 2026 Calendar with daily interactive checklist and previous day rollover",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#9fbabf",
+  "theme_color": "#1c252b",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
