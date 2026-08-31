@@ -1846,13 +1846,13 @@ function moveTaskToDay(taskId, offset) {
 
     const movedTask = currentTasks[index];
     const targetTasks = getDayTasks(targetDay);
-    const formattedTarget = targetDay < 10 ? `0${targetDay}` : `${targetDay}`;
+    const targetActualDate = `${MONTH_NAMES[state.currentMonth]} ${targetDay < 10 ? '0' + targetDay : targetDay}, ${state.currentYear}`;
 
     // 1. Prevent duplicate tasks on target day
     const isDuplicate = targetTasks.some(t => t.text.trim().toLowerCase() === movedTask.text.trim().toLowerCase());
     if (isDuplicate) {
         AudioService.triggerHaptic(50);
-        showNotificationToast(`Task "${movedTask.text}" already exists on Day ${formattedTarget}! (No duplicate created)`);
+        showNotificationToast(`Task "${movedTask.text}" already exists on ${targetActualDate}! (No duplicate created)`);
         return;
     }
 
@@ -1877,7 +1877,7 @@ function moveTaskToDay(taskId, offset) {
     updateMonthlyProgress();
     AudioService.triggerHaptic(25);
 
-    showNotificationToast(`Moved task to Day ${formattedTarget}`);
+    showNotificationToast(`Moved task to ${targetActualDate}`);
 }
 
 function renderTasks() {
