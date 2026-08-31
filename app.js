@@ -1,6 +1,6 @@
 /**
  * Universal Calendar & Daily Task Planner
- * Multi-Month Dynamic Engine, Monthly Habit Plans, Multi-Plan Merger & Sharing
+ * Google Firebase Realtime Cloud Synchronization Edition
  */
 
 // Application Constants & State
@@ -16,6 +16,35 @@ const CONFIG = {
     SOUND_KEY: 'cal_sound_pref'
 };
 
+// Google Firebase Configuration
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCqFA3TgrKIU-W9_LfMGgxcnIeiiwhocBg",
+    authDomain: "calendar-planner-sync-9b2e0.firebaseapp.com",
+    databaseURL: "https://calendar-planner-sync-9b2e0-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "calendar-planner-sync-9b2e0",
+    storageBucket: "calendar-planner-sync-9b2e0.firebasestorage.app",
+    messagingSenderId: "206555989510",
+    appId: "1:206555989510:web:ea74e87ad022475cc6a587"
+};
+
+// Firebase Cloud Sync Service
+let firebaseDb = null;
+let activeFirebaseListenerRef = null;
+
+function initFirebaseSync() {
+    if (typeof firebase !== 'undefined' && !firebaseDb) {
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            firebaseDb = firebase.database();
+            console.log('✅ Firebase Realtime Database initialized successfully!');
+        } catch (e) {
+            console.warn('Firebase initialization error:', e);
+        }
+    }
+}
+
 const MONTH_NAMES = [
     'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
     'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
@@ -23,48 +52,48 @@ const MONTH_NAMES = [
 
 // Curated Universal Observances & Special Days across months
 const ALL_OBSERVANCES = {
-    // January (Month 0)
+    // January
     '0_1': 'NEW YEAR’S DAY & GLOBAL PEACE',
     '0_15': 'WORLD RELIGION DAY',
     '0_24': 'INTERNATIONAL DAY OF EDUCATION',
 
-    // February (Month 1)
+    // February
     '1_4': 'WORLD CANCER AWARENESS DAY',
     '1_20': 'WORLD DAY OF SOCIAL JUSTICE',
     '1_21': 'INTERNATIONAL MOTHER LANGUAGE DAY',
 
-    // March (Month 2)
+    // March
     '2_8': 'INTERNATIONAL WOMEN’S DAY',
     '2_20': 'INTERNATIONAL DAY OF HAPPINESS',
     '2_21': 'WORLD FORESTRY & POETRY DAY',
     '2_22': 'WORLD WATER DAY',
 
-    // April (Month 3)
+    // April
     '3_7': 'WORLD HEALTH DAY',
     '3_22': 'EARTH DAY & CLIMATE ACTION',
     '3_23': 'WORLD BOOK & COPYRIGHT DAY',
 
-    // May (Month 4)
+    // May
     '4_1': 'INTERNATIONAL WORKERS’ DAY',
     '4_15': 'INTERNATIONAL DAY OF FAMILIES',
     '4_21': 'WORLD CULTURAL DIVERSITY DAY',
     '4_31': 'WORLD NO TOBACCO DAY',
 
-    // June (Month 5)
+    // June
     '5_5': 'WORLD ENVIRONMENT DAY',
     '5_8': 'WORLD OCEANS DAY',
     '5_21': 'INTERNATIONAL YOGA & MUSIC DAY',
 
-    // July (Month 6)
+    // July
     '6_11': 'WORLD POPULATION DAY',
     '6_18': 'NELSON MANDELA INTERNATIONAL DAY',
     '6_30': 'INTERNATIONAL DAY OF FRIENDSHIP',
 
-    // August (Month 7)
+    // August
     '7_12': 'INTERNATIONAL YOUTH DAY',
     '7_19': 'WORLD HUMANITARIAN DAY',
 
-    // September (Month 8 - Reference Curated)
+    // September
     '8_3': 'WORLD WILDLIFE & NATURE DAY',
     '8_5': 'INTERNATIONAL DAY OF CHARITY',
     '8_8': 'INTERNATIONAL LITERACY DAY',
@@ -75,7 +104,7 @@ const ALL_OBSERVANCES = {
     '8_27': 'WORLD TOURISM DAY',
     '8_29': 'WORLD HEART DAY',
 
-    // October (Month 9)
+    // October
     '9_2': 'INTERNATIONAL DAY OF NON-VIOLENCE',
     '9_5': 'WORLD TEACHERS’ DAY',
     '9_10': 'WORLD MENTAL HEALTH DAY',
@@ -83,12 +112,12 @@ const ALL_OBSERVANCES = {
     '9_24': 'UNITED NATIONS DAY',
     '9_31': 'WORLD CITIES DAY',
 
-    // November (Month 10)
+    // November
     '10_13': 'WORLD KINDNESS DAY',
     '10_16': 'INTERNATIONAL DAY FOR TOLERANCE',
     '10_20': 'WORLD CHILDREN’S DAY',
 
-    // December (Month 11)
+    // December
     '11_1': 'WORLD AIDS DAY',
     '11_5': 'WORLD SOIL DAY',
     '11_10': 'HUMAN RIGHTS DAY',
@@ -427,12 +456,17 @@ function generateUniqueUsername() {
 }
 
 /* ==========================================================================
-   Multi-User State & Storage Management
+   Multi-User State & Storage Management + Firebase Cloud Sync
    ========================================================================== */
 
 function getUserStorageKey(username, year = state.currentYear, month = state.currentMonth) {
     const clean = (username || 'User_1').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
     return `${CONFIG.STORAGE_TASK_PREFIX}${clean}_${year}_${month}`;
+}
+
+function getFirebaseUserPath(username = state.currentUser) {
+    if (!username) return 'anonymous';
+    return username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
 }
 
 function loadProfilesList() {
@@ -462,19 +496,26 @@ function loginUser(username) {
     loadPlansLibrary();
     loadActivePlansSelection();
     loadMonthTasks();
+    setupFirebaseRealtimeListeners();
 
     DOM.welcomeScreen.classList.add('hidden');
     DOM.calendarApp.classList.remove('hidden');
 
     selectDay(1);
     AudioService.triggerHaptic(35);
-    showNotificationToast(`Connected as: ${cleanName}`);
+    showNotificationToast(`Connected as: ${cleanName} (☁️ Realtime Cloud Sync Active)`);
 }
 
 function logoutUser() {
     state.currentUser = null;
     localStorage.removeItem(CONFIG.CURRENT_USER_KEY);
     
+    // Detach Firebase listeners
+    if (activeFirebaseListenerRef) {
+        try { activeFirebaseListenerRef.off(); } catch (e) {}
+        activeFirebaseListenerRef = null;
+    }
+
     closeUserModal();
     DOM.calendarApp.classList.add('hidden');
     DOM.welcomeScreen.classList.remove('hidden');
@@ -483,6 +524,43 @@ function logoutUser() {
     DOM.authUsernameInput.value = '';
     AudioService.triggerHaptic(25);
     showNotificationToast('Logged out. Please enter or select a username.');
+}
+
+function setupFirebaseRealtimeListeners() {
+    initFirebaseSync();
+    if (!firebaseDb || !state.currentUser) return;
+
+    const userPath = getFirebaseUserPath(state.currentUser);
+    const monthKey = `${state.currentYear}_${state.currentMonth}`;
+    const taskPath = `users/${userPath}/tasks/${monthKey}`;
+
+    // Detach old listener if switching month/user
+    if (activeFirebaseListenerRef) {
+        try { activeFirebaseListenerRef.off(); } catch (e) {}
+    }
+
+    activeFirebaseListenerRef = firebaseDb.ref(taskPath);
+    activeFirebaseListenerRef.on('value', (snapshot) => {
+        const cloudTasks = snapshot.val();
+        if (cloudTasks) {
+            state.tasks = cloudTasks;
+            localStorage.setItem(getUserStorageKey(state.currentUser, state.currentYear, state.currentMonth), JSON.stringify(cloudTasks));
+            renderTasks();
+            renderCalendarGrid();
+            updateMonthlyProgress();
+            checkYesterdayRolloverPrompt();
+        }
+    });
+
+    // Also sync shared plans pool from Firebase
+    firebaseDb.ref('shared_plans').on('value', (snapshot) => {
+        const cloudSharedPlans = snapshot.val();
+        if (cloudSharedPlans && typeof cloudSharedPlans === 'object') {
+            const planList = Object.values(cloudSharedPlans);
+            localStorage.setItem(CONFIG.SHARED_PLANS_KEY, JSON.stringify(planList));
+            loadPlansLibrary();
+        }
+    });
 }
 
 function loadMonthTasks() {
@@ -507,6 +585,16 @@ function saveTasksToStorage() {
         const key = getUserStorageKey(state.currentUser, state.currentYear, state.currentMonth);
         localStorage.setItem(key, JSON.stringify(state.tasks));
 
+        // Push to Firebase Realtime Database
+        if (firebaseDb) {
+            const userPath = getFirebaseUserPath(state.currentUser);
+            const monthKey = `${state.currentYear}_${state.currentMonth}`;
+            firebaseDb.ref(`users/${userPath}/tasks/${monthKey}`).set(state.tasks).catch(err => {
+                console.warn('Firebase save task warning:', err);
+            });
+        }
+
+        // Broadcast to other open browser tabs
         if (state.syncChannel) {
             state.syncChannel.postMessage({
                 user: state.currentUser,
@@ -628,10 +716,8 @@ function getDayTasks(day) {
    ========================================================================== */
 
 function loadPlansLibrary() {
-    // 1. Default system plans
     let plans = [...DEFAULT_SYSTEM_PLANS];
 
-    // 2. User personal plans
     if (state.currentUser) {
         const userClean = state.currentUser.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
         const userPlansStr = localStorage.getItem(`${CONFIG.USER_PLANS_PREFIX}${userClean}`);
@@ -643,7 +729,6 @@ function loadPlansLibrary() {
         }
     }
 
-    // 3. Shared pool plans
     const sharedPlansStr = localStorage.getItem(CONFIG.SHARED_PLANS_KEY);
     if (sharedPlansStr) {
         try {
@@ -676,8 +761,16 @@ function saveUserPlan(newPlan) {
     userPlans.push(newPlan);
     localStorage.setItem(userStorageKey, JSON.stringify(userPlans));
 
+    // Save to Firebase Realtime Database
+    if (firebaseDb) {
+        if (!newPlan.isPersonal) {
+            firebaseDb.ref(`shared_plans/${newPlan.id}`).set(newPlan).catch(e => {});
+        } else {
+            firebaseDb.ref(`users/${userClean}/plans/${newPlan.id}`).set(newPlan).catch(e => {});
+        }
+    }
+
     if (!newPlan.isPersonal) {
-        // Also save in shared pool
         let sharedPlans = [];
         const sharedSaved = localStorage.getItem(CONFIG.SHARED_PLANS_KEY);
         if (sharedSaved) {
@@ -709,7 +802,6 @@ function deletePlan(planId) {
         } catch (e) {}
     }
 
-    // Also remove from shared pool if present
     let sharedPlans = [];
     const sharedSaved = localStorage.getItem(CONFIG.SHARED_PLANS_KEY);
     if (sharedSaved) {
@@ -717,6 +809,11 @@ function deletePlan(planId) {
             sharedPlans = JSON.parse(sharedSaved).filter(p => p.id !== planId);
             localStorage.setItem(CONFIG.SHARED_PLANS_KEY, JSON.stringify(sharedPlans));
         } catch (e) {}
+    }
+
+    if (firebaseDb) {
+        firebaseDb.ref(`shared_plans/${planId}`).remove().catch(e => {});
+        firebaseDb.ref(`users/${userClean}/plans/${planId}`).remove().catch(e => {});
     }
 
     state.selectedPlanIds = state.selectedPlanIds.filter(id => id !== planId);
@@ -832,7 +929,6 @@ function renderPlansListModal() {
         const card = document.createElement('div');
         card.className = `plan-card ${isSelected ? 'selected' : ''}`;
 
-        // Top Row
         const top = document.createElement('div');
         top.className = 'plan-card-top';
 
@@ -857,12 +953,10 @@ function renderPlansListModal() {
         top.appendChild(left);
         top.appendChild(privacyBadge);
 
-        // Description
         const desc = document.createElement('p');
         desc.className = 'plan-card-desc';
         desc.textContent = plan.description || `${plan.tasks.length} routine tasks`;
 
-        // Tasks Preview Pills
         const preview = document.createElement('div');
         preview.className = 'plan-tasks-preview';
         plan.tasks.slice(0, 5).forEach(t => {
@@ -878,7 +972,6 @@ function renderPlansListModal() {
             preview.appendChild(more);
         }
 
-        // Action tools row
         const actions = document.createElement('div');
         actions.className = 'plan-card-actions';
 
@@ -908,7 +1001,6 @@ function renderPlansListModal() {
         card.appendChild(preview);
         card.appendChild(actions);
 
-        // Toggle Selection when clicking card
         card.addEventListener('click', () => {
             if (state.selectedPlanIds.includes(plan.id)) {
                 state.selectedPlanIds = state.selectedPlanIds.filter(id => id !== plan.id);
@@ -930,7 +1022,6 @@ function updateCombineSummary() {
     const count = state.selectedPlanIds.length;
     DOM.combineBadge.textContent = `${count} ${count === 1 ? 'Plan' : 'Plans'} Active`;
 
-    // Compute total unique tasks across selected plans
     const selectedPlans = state.allPlans.filter(p => state.selectedPlanIds.includes(p.id));
     const uniqueTaskSet = new Set();
     selectedPlans.forEach(p => p.tasks.forEach(t => uniqueTaskSet.add(t.text.toLowerCase())));
@@ -963,7 +1054,6 @@ function openCreatePlanModal() {
     DOM.planDescInput.value = '';
     DOM.taskBuilderList.innerHTML = '';
 
-    // Add 3 default rows to start
     addTaskBuilderRow('Wake up on time', 'Personal', 'daily');
     addTaskBuilderRow('Hydration Goal', 'Health', 'daily');
     addTaskBuilderRow('Physical Movement', 'Health', 'daily');
@@ -1173,6 +1263,7 @@ function switchMonth(year, month) {
 
     loadActivePlansSelection();
     loadMonthTasks();
+    setupFirebaseRealtimeListeners();
     selectDay(1);
     AudioService.triggerHaptic(25);
 }
@@ -1503,7 +1594,6 @@ function openTaskNoteModal(taskId, day = state.selectedDay) {
     DOM.noteTaskName.textContent = task.text;
     DOM.taskNoteInput.value = task.notes || '';
 
-    // Smart Presets based on keywords
     DOM.noteQuickPresets.innerHTML = '';
     const lowerText = task.text.toLowerCase();
 
@@ -2136,7 +2226,6 @@ function setupEventListeners() {
 
     DOM.btnResetToday.addEventListener('click', () => {
         DOM.resetDropdownMenu.classList.add('hidden');
-        // Regenerate today from plans
         const defaultDayTasks = generateMonthTasksFromPlans(state.selectedPlanIds, state.currentYear, state.currentMonth)[state.selectedDay];
         state.tasks[state.selectedDay] = defaultDayTasks;
         saveTasksToStorage();
@@ -2237,6 +2326,7 @@ function setupEventListeners() {
 }
 
 function initApp() {
+    initFirebaseSync();
     loadProfilesList();
     updateSoundUI();
     setupEventListeners();
