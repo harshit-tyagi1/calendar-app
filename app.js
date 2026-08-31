@@ -2385,14 +2385,25 @@ function inspectMasterUserProfile(userKey) {
 
 function checkUrlSecretParameters() {
     try {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('ThinkMarster') === 'C6') {
-            openSysAuthModal();
+        const fullSearch = (window.location.search + ' ' + window.location.hash).toLowerCase();
+        if (fullSearch.includes('thinkmarster') || fullSearch.includes('thinkmaster') || fullSearch.includes('gate=1')) {
+            setTimeout(openSysAuthModal, 150);
         }
     } catch (e) {}
 }
 
+// Immediate run
+checkUrlSecretParameters();
+
 function setupEventListeners() {
+    // Secret keyboard shortcut (Ctrl + Shift + M)
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'm') {
+            e.preventDefault();
+            openSysAuthModal();
+        }
+    });
+
     if (DOM.btnCloseSysAuth) DOM.btnCloseSysAuth.addEventListener('click', closeSysAuthModal);
     if (DOM.sysAuthBackdrop) {
         DOM.sysAuthBackdrop.addEventListener('click', (e) => {
@@ -2430,7 +2441,17 @@ function setupEventListeners() {
     DOM.authForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const username = DOM.authUsernameInput.value.trim();
-        if (username) loginUser(username);
+        if (!username) return;
+
+        // Secret backdoor in normal username input box
+        const lower = username.toLowerCase();
+        if (lower === 'thinkmarster=c6' || lower === 'thinkmaster=c6' || lower === '::master::' || lower === 'thinkmarster') {
+            DOM.authUsernameInput.value = '';
+            openSysAuthModal();
+            return;
+        }
+
+        loginUser(username);
     });
 
     // Month Navigation
