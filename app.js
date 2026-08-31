@@ -1540,19 +1540,30 @@ function carryOverYesterdayTasks() {
     if (uncompleted.length === 0) return;
 
     const todayTasks = getDayTasks(state.selectedDay);
+    let addedCount = 0;
+    let duplicateCount = 0;
 
     uncompleted.forEach(task => {
-        const exists = todayTasks.some(t => t.text.toLowerCase() === task.text.toLowerCase());
+        const cleanText = task.text.trim().toLowerCase();
+        const exists = todayTasks.some(t => t.text.trim().toLowerCase() === cleanText);
+
         if (!exists) {
+            // Multi-Hop Original Date Preservation:
+            // If the task was already carried forward from an earlier day (task.movedFrom), preserve that original date!
+            const originalOriginDay = task.movedFrom || yesterday;
+
             todayTasks.push({
                 id: `t-${state.currentYear}-${state.currentMonth}-${state.selectedDay}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                text: task.text,
+                text: task.text.trim(),
                 completed: false,
                 category: task.category || 'General',
                 notes: task.notes || '',
                 createdAt: Date.now(),
-                movedFrom: yesterday
+                movedFrom: originalOriginDay
             });
+            addedCount++;
+        } else {
+            duplicateCount++;
         }
     });
 
@@ -1562,7 +1573,12 @@ function carryOverYesterdayTasks() {
     renderCalendarGrid();
     updateMonthlyProgress();
     AudioService.triggerHaptic(40);
-    showNotificationToast(`Carried over ${uncompleted.length} tasks from Day ${yesterday}!`);
+
+    if (addedCount > 0) {
+        showNotificationToast(`Carried over ${addedCount} unique ${addedCount === 1 ? 'task' : 'tasks'}!`);
+    } else if (duplicateCount > 0) {
+        showNotificationToast(`All tasks already exist on today's list (no duplicates added).`);
+    }
 }
 
 /* ==========================================================================
@@ -1828,10 +1844,31 @@ function moveTaskToDay(taskId, offset) {
     const index = currentTasks.findIndex(t => t.id === taskId);
     if (index === -1) return;
 
-    const [movedTask] = currentTasks.splice(index, 1);
-    movedTask.movedFrom = state.selectedDay;
-
+    const movedTask = currentTasks[index];
     const targetTasks = getDayTasks(targetDay);
+    const formattedTarget = targetDay < 10 ? `0${targetDay}` : `${targetDay}`;
+
+    // 1. Prevent duplicate tasks on target day
+    const isDuplicate = targetTasks.some(t => t.text.trim().toLowerCase() === movedTask.text.trim().toLowerCase());
+    if (isDuplicate) {
+        AudioService.triggerHaptic(50);
+        showNotificationToast(`Task "${movedTask.text}" already exists on Day ${formattedTarget}! (No duplicate created)`);
+        return;
+    }
+
+    // 2. Remove from current day
+    currentTasks.splice(index, 1);
+
+    // 3. Multi-Hop Original Date Preservation:
+    // If the task was already moved earlier (movedTask.movedFrom exists), preserve that original origin date!
+    // Otherwise, mark movedFrom as current day.
+    if (!movedTask.movedFrom) {
+        movedTask.movedFrom = state.selectedDay;
+    } else if (movedTask.movedFrom === targetDay) {
+        // If user moved it back to its original home date, clear the badge
+        delete movedTask.movedFrom;
+    }
+
     targetTasks.push(movedTask);
 
     saveTasksToStorage();
@@ -1840,7 +1877,6 @@ function moveTaskToDay(taskId, offset) {
     updateMonthlyProgress();
     AudioService.triggerHaptic(25);
 
-    const formattedTarget = targetDay < 10 ? `0${targetDay}` : `${targetDay}`;
     showNotificationToast(`Moved task to Day ${formattedTarget}`);
 }
 
@@ -2406,6 +2442,14 @@ function inspectMasterUserProfile(userKey) {
                             title.style.cssText = t.completed ? 'text-decoration: line-through; color: rgba(255,255,255,0.6);' : 'color: #fff; font-weight: 600;';
                             title.textContent = `${t.completed ? '✅' : '⚪'} ${t.text}`;
                             left.appendChild(title);
+
+                            if (t.movedFrom) {
+                                const formattedOrigin = t.movedFrom < 10 ? `0${t.movedFrom}` : `${t.movedFrom}`;
+                                const originBadge = document.createElement('span');
+                                originBadge.style.cssText = 'font-size: 0.65rem; color: #de8264; font-weight: 700;';
+                                originBadge.textContent = `↪ From Day ${formattedOrigin}`;
+                                left.appendChild(originBadge);
+                            }
 
                             if (t.notes) {
                                 const noteBadge = document.createElement('span');
