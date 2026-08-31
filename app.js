@@ -411,6 +411,7 @@ const DOM = {
 
     masterConsoleScreen: document.getElementById('masterConsoleScreen'),
     btnRefreshMasterData: document.getElementById('btnRefreshMasterData'),
+    btnBackToLoginFromMaster: document.getElementById('btnBackToLoginFromMaster'),
     btnExitMasterConsole: document.getElementById('btnExitMasterConsole'),
     metricTotalUsers: document.getElementById('metricTotalUsers'),
     metricTotalTasks: document.getElementById('metricTotalTasks'),
@@ -2382,12 +2383,16 @@ function inspectMasterUserProfile(userKey) {
     }
 }
 
+function checkUrlSecretParameters() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('ThinkMarster') === 'C6') {
+            openSysAuthModal();
+        }
+    } catch (e) {}
+}
+
 function setupEventListeners() {
-    // Discreet Master Console & Security Authentication Trigger
-    if (DOM.welcomeYearBadge) {
-        DOM.welcomeYearBadge.style.cursor = 'pointer';
-        DOM.welcomeYearBadge.addEventListener('click', openSysAuthModal);
-    }
     if (DOM.btnCloseSysAuth) DOM.btnCloseSysAuth.addEventListener('click', closeSysAuthModal);
     if (DOM.sysAuthBackdrop) {
         DOM.sysAuthBackdrop.addEventListener('click', (e) => {
@@ -2400,6 +2405,12 @@ function setupEventListeners() {
     });
 
     if (DOM.btnExitMasterConsole) DOM.btnExitMasterConsole.addEventListener('click', closeMasterConsoleScreen);
+    if (DOM.btnBackToLoginFromMaster) {
+        DOM.btnBackToLoginFromMaster.addEventListener('click', () => {
+            closeMasterConsoleScreen();
+            logoutUser();
+        });
+    }
     if (DOM.btnRefreshMasterData) DOM.btnRefreshMasterData.addEventListener('click', fetchMasterCloudData);
     if (DOM.masterUserSearchInput) {
         DOM.masterUserSearchInput.addEventListener('input', (e) => {
@@ -2671,6 +2682,7 @@ function initApp() {
     loadProfilesList();
     updateSoundUI();
     setupEventListeners();
+    checkUrlSecretParameters();
 
     const lastActiveUser = localStorage.getItem(CONFIG.CURRENT_USER_KEY);
     if (lastActiveUser && state.savedProfiles.includes(lastActiveUser)) {
