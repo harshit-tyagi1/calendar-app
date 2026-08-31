@@ -171,7 +171,7 @@ let state = {
     soundEnabled: true,
     tasks: {},
     allPlans: [],
-    selectedPlanIds: ['plan_core_habits'],
+    selectedPlanIds: [], // Default: Blank Month (No Routine Plan) for all months
     activeEditingTaskId: null,
     activeEditingDay: null,
     pickerTargetYear: CONFIG.DEFAULT_YEAR,
@@ -789,12 +789,8 @@ function loadActivePlansSelection() {
             state.selectedPlanIds = [];
         }
     } else {
-        // Default September 2026 to Core habits; other months can start blank unless selected!
-        if (state.currentYear === CONFIG.DEFAULT_YEAR && state.currentMonth === CONFIG.DEFAULT_MONTH) {
-            state.selectedPlanIds = ['plan_core_habits'];
-        } else {
-            state.selectedPlanIds = [];
-        }
+        // By default, every month starts as Blank Month (No Routine Plan)
+        state.selectedPlanIds = [];
     }
 }
 
