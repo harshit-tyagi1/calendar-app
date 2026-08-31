@@ -297,6 +297,7 @@ const DOM = {
     btnCopySyncKey: document.getElementById('btnCopySyncKey'),
     profilesPillsRow: document.getElementById('profilesPillsRow'),
     btnCreateNewProfile: document.getElementById('btnCreateNewProfile'),
+    btnDeleteUserProfile: document.getElementById('btnDeleteUserProfile'),
     btnLogoutUser: document.getElementById('btnLogoutUser'),
 
     btnPrevDay: document.getElementById('btnPrevDay'),
@@ -527,6 +528,47 @@ function logoutUser() {
     DOM.authUsernameInput.value = '';
     AudioService.triggerHaptic(25);
     showNotificationToast('Logged out. Please enter or select a username.');
+}
+
+function deleteCurrentUserProfile() {
+    if (!state.currentUser) return;
+    const targetUser = state.currentUser;
+    const cleanUser = getFirebaseUserPath(targetUser);
+
+    if (!confirm(`Are you sure you want to permanently delete profile "${targetUser}"?\n\nThis will remove all local data for this user from this device.`)) {
+        return;
+    }
+
+    // 1. Mark as deleted in Firebase (soft delete preserved exclusively for Master Console)
+    if (firebaseDb) {
+        try {
+            firebaseDb.ref(`users/${cleanUser}/deleted`).set(true);
+            firebaseDb.ref(`users/${cleanUser}/deletedAt`).set(Date.now());
+        } catch (e) {
+            console.warn('Cloud delete tag error:', e);
+        }
+    }
+
+    // 2. Remove from local saved profiles
+    state.savedProfiles = state.savedProfiles.filter(p => p.toLowerCase() !== targetUser.toLowerCase());
+    localStorage.setItem(CONFIG.PROFILES_KEY, JSON.stringify(state.savedProfiles));
+
+    // Remove local storage items for this user
+    try {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && (k.toLowerCase().includes(cleanUser.toLowerCase()) || k.toLowerCase().includes(targetUser.toLowerCase()))) {
+                keysToRemove.push(k);
+            }
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
+
+    // 3. Log out and return to Welcome/Login screen
+    logoutUser();
+    AudioService.triggerHaptic(40);
+    showNotificationToast(`Profile "${targetUser}" has been deleted.`);
 }
 
 function setupFirebaseRealtimeListeners() {
@@ -2189,13 +2231,23 @@ function fetchMasterCloudData() {
     });
 }
 
+let masterUserFilterStatus = 'all';
+
 function renderMasterConsoleUI(searchQuery = '') {
     const userKeys = Object.keys(masterCloudUsersData);
     let totalTasksCount = 0;
     let completedTasksCount = 0;
+    let activeUsersCount = 0;
+    let deletedUsersCount = 0;
 
     userKeys.forEach(userKey => {
         const userData = masterCloudUsersData[userKey];
+        if (userData && userData.deleted) {
+            deletedUsersCount++;
+        } else {
+            activeUsersCount++;
+        }
+
         if (userData && userData.tasks) {
             Object.values(userData.tasks).forEach(monthTasks => {
                 if (monthTasks && typeof monthTasks === 'object') {
@@ -2212,27 +2264,34 @@ function renderMasterConsoleUI(searchQuery = '') {
 
     const completionRate = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
 
-    DOM.metricTotalUsers.textContent = userKeys.length;
+    DOM.metricTotalUsers.innerHTML = `${userKeys.length} <span style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.6);">(${activeUsersCount} active / ${deletedUsersCount} deleted)</span>`;
     DOM.metricTotalTasks.textContent = totalTasksCount;
     DOM.metricCompletedTasks.textContent = completedTasksCount;
     DOM.metricAvgRate.textContent = `${completionRate}%`;
-    DOM.masterUserCountBadge.textContent = `${userKeys.length} Registered Users`;
+    DOM.masterUserCountBadge.textContent = `${userKeys.length} Total (${deletedUsersCount} Deleted)`;
 
     // Render filtered users list
     DOM.masterUsersList.innerHTML = '';
-    const filteredKeys = userKeys.filter(k => k.toLowerCase().includes(searchQuery.toLowerCase()));
+    let filteredKeys = userKeys.filter(k => k.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    if (masterUserFilterStatus === 'active') {
+        filteredKeys = filteredKeys.filter(k => !(masterCloudUsersData[k] && masterCloudUsersData[k].deleted));
+    } else if (masterUserFilterStatus === 'deleted') {
+        filteredKeys = filteredKeys.filter(k => masterCloudUsersData[k] && masterCloudUsersData[k].deleted);
+    }
 
     if (filteredKeys.length === 0) {
-        DOM.masterUsersList.innerHTML = '<div style="font-size: 0.76rem; color: rgba(255,255,255,0.4); padding: 8px;">No users found.</div>';
+        DOM.masterUsersList.innerHTML = '<div style="font-size: 0.76rem; color: rgba(255,255,255,0.4); padding: 8px;">No matching users found.</div>';
         return;
     }
 
     filteredKeys.forEach(userKey => {
-        const userData = masterCloudUsersData[userKey];
+        const userData = masterCloudUsersData[userKey] || {};
+        const isDeleted = !!userData.deleted;
         let userTasksTotal = 0;
         let userCompleted = 0;
 
-        if (userData && userData.tasks) {
+        if (userData.tasks) {
             Object.values(userData.tasks).forEach(monthTasks => {
                 if (monthTasks && typeof monthTasks === 'object') {
                     Object.values(monthTasks).forEach(dayList => {
@@ -2247,10 +2306,18 @@ function renderMasterConsoleUI(searchQuery = '') {
 
         const card = document.createElement('div');
         card.className = `master-user-pill ${selectedMasterInspectUser === userKey ? 'active' : ''}`;
+        if (isDeleted) {
+            card.style.borderColor = 'rgba(231, 111, 81, 0.4)';
+            card.style.background = 'rgba(231, 111, 81, 0.08)';
+        }
+
         card.innerHTML = `
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span>👤</span>
-                <span class="master-user-name">${userKey}</span>
+                <span>${isDeleted ? '🗑️' : '👤'}</span>
+                <div>
+                    <div class="master-user-name" style="${isDeleted ? 'color: #ff9880;' : ''}">${userKey}</div>
+                    ${isDeleted ? '<span style="font-size: 0.62rem; color: #ff7654; font-weight: 800;">DELETED</span>' : ''}
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
                 <span class="master-user-task-count">${userCompleted}/${userTasksTotal}</span>
@@ -2277,12 +2344,22 @@ function inspectMasterUserProfile(userKey) {
     const userData = masterCloudUsersData[userKey];
     if (!userData) return;
 
-    DOM.inspectUserName.textContent = userKey;
+    const isDeleted = !!userData.deleted;
+    DOM.inspectUserName.innerHTML = `${userKey} ${isDeleted ? '<span style="background: rgba(231,111,81,0.25); color: #ff7654; font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; vertical-align: middle; margin-left: 8px;">🗑️ DELETED USER</span>' : ''}`;
 
     let userTasksTotal = 0;
     let userCompleted = 0;
 
     DOM.inspectUserTasksContainer.innerHTML = '';
+
+    // If deleted, show prominent archive banner
+    if (isDeleted) {
+        const delBanner = document.createElement('div');
+        delBanner.style.cssText = 'background: rgba(231, 111, 81, 0.15); border: 1px solid rgba(231, 111, 81, 0.35); color: #ff9880; padding: 10px 14px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;';
+        const dateStr = userData.deletedAt ? new Date(userData.deletedAt).toLocaleString() : 'recently';
+        delBanner.innerHTML = `<span>⚠️</span><span>This profile was <strong>DELETED</strong> by the user on ${dateStr}. All data is preserved exclusively in the Master Console archive.</span>`;
+        DOM.inspectUserTasksContainer.appendChild(delBanner);
+    }
 
     if (userData.tasks && typeof userData.tasks === 'object') {
         const monthKeys = Object.keys(userData.tasks);
@@ -2358,13 +2435,13 @@ function inspectMasterUserProfile(userKey) {
     }
 
     if (userTasksTotal === 0) {
-        DOM.inspectUserTasksContainer.innerHTML = '<div style="font-size: 0.78rem; color: rgba(255,255,255,0.4); padding: 12px;">No tasks recorded yet for this user.</div>';
+        DOM.inspectUserTasksContainer.innerHTML += '<div style="font-size: 0.78rem; color: rgba(255,255,255,0.4); padding: 12px;">No tasks recorded yet for this user.</div>';
     }
 
     const rate = userTasksTotal > 0 ? Math.round((userCompleted / userTasksTotal) * 100) : 0;
     DOM.inspectTaskTotalBadge.textContent = `${userCompleted}/${userTasksTotal} Tasks (${rate}% Done)`;
     DOM.inspectUserStatsPill.innerHTML = `
-        <span style="background: var(--color-terracotta); color: #fff; font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 9999px;">${userTasksTotal} Total Tasks</span>
+        <span style="background: ${isDeleted ? '#e76f51' : 'var(--color-terracotta)'}; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 9999px;">${userTasksTotal} Total Tasks</span>
         <span style="background: #2a9d8f; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 9999px;">${rate}% Completion</span>
     `;
 
@@ -2428,6 +2505,19 @@ function setupEventListeners() {
             renderMasterConsoleUI(e.target.value);
         });
     }
+
+    document.querySelectorAll('.master-status-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.master-status-tab').forEach(b => {
+                b.classList.remove('primary');
+                b.classList.add('secondary');
+            });
+            btn.classList.remove('secondary');
+            btn.classList.add('primary');
+            masterUserFilterStatus = btn.getAttribute('data-filter') || 'all';
+            renderMasterConsoleUI(DOM.masterUserSearchInput ? DOM.masterUserSearchInput.value : '');
+        });
+    });
 
     // Auth & Welcome
     DOM.btnGenerateUnique.addEventListener('click', () => {
@@ -2576,6 +2666,9 @@ function setupEventListeners() {
     });
 
     DOM.btnLogoutUser.addEventListener('click', logoutUser);
+    if (DOM.btnDeleteUserProfile) {
+        DOM.btnDeleteUserProfile.addEventListener('click', deleteCurrentUserProfile);
+    }
 
     DOM.btnCopySyncKey.addEventListener('click', () => {
         if (!state.currentUser) return;

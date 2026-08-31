@@ -608,13 +608,18 @@
                     </div>
                 </div>
 
-                <div class="user-modal-footer">
-                    <button class="btn-modal-action danger" id="btnLogoutUser">
-                        <span>🚪 Switch / Log Out User</span>
+                <div class="user-modal-footer" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <button class="btn-modal-action danger" id="btnDeleteUserProfile" style="background: rgba(231, 111, 81, 0.15); border-color: #e76f51; color: #e76f51; font-weight: 700;">
+                        <span>🗑️ Delete Account</span>
                     </button>
-                    <button class="btn-modal-action secondary" id="btnCreateNewProfile">
-                        <span>➕ New Profile</span>
-                    </button>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn-modal-action secondary" id="btnLogoutUser">
+                            <span>🚪 Switch / Log Out</span>
+                        </button>
+                        <button class="btn-modal-action primary" id="btnCreateNewProfile">
+                            <span>➕ New Profile</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -757,8 +762,16 @@
                         <span style="font-family: var(--font-heading); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.1em; color: rgba(255,255,255,0.7);">ALL USER PROFILES</span>
                         <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5);" id="masterUserCountBadge">0 Users</span>
                     </div>
+
+                    <!-- Filter Status Buttons -->
+                    <div style="display: flex; gap: 4px;" id="masterUserFilterTabs">
+                        <button type="button" class="btn-modal-action primary master-status-tab" data-filter="all" style="flex: 1; padding: 4px 8px; font-size: 0.7rem; text-align: center;">All</button>
+                        <button type="button" class="btn-modal-action secondary master-status-tab" data-filter="active" style="flex: 1; padding: 4px 8px; font-size: 0.7rem; text-align: center;">Active</button>
+                        <button type="button" class="btn-modal-action secondary master-status-tab" data-filter="deleted" style="flex: 1; padding: 4px 8px; font-size: 0.7rem; text-align: center; color: #ff7654;">Deleted</button>
+                    </div>
+
                     <input type="text" id="masterUserSearchInput" class="form-input" placeholder="🔍 Search username..." style="background: #233139; border-color: rgba(255,255,255,0.15); color: #fff; font-size: 0.8rem; padding: 7px 10px;">
-                    <div id="masterUsersList" style="display: flex; flex-direction: column; gap: 6px; max-height: 520px; overflow-y: auto; padding-right: 4px;">
+                    <div id="masterUsersList" style="display: flex; flex-direction: column; gap: 6px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
                         <!-- Dynamically populated user pills -->
                     </div>
                 </div>
