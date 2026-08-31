@@ -23,19 +23,11 @@ const APP_CONFIG = {
         userSectionSub: "Each user or key has completely independent tasks, plans, and calendar records."
     },
 
-    // =========================================================================
-    // 2. DISCREET MASTER CONSOLE SECURITY & ACCESS
-    // =========================================================================
+
     security: {
-        // Secret URL parameter: https://your-site.com/?ThinkMarster=C6
         queryKey: "ThinkMarster",
         queryValue: "C6",
-        
-        // Secret command to type in the normal username input box
         inputTriggers: ["thinkmarster=c6", "thinkmaster=c6", "::master::", "thinkmarster"],
-        
-        // Cryptographic SHA-256 Hashes (User: CalendarAppLOP | Pass: ThinkBook@2026C)
-        // Credentials are never stored as plain text.
         authHashes: {
             u: "9c6fa0ceec6e88e7a4a55732f215d9cf1c0dc9ff724b546d2c46dd623018765e",
             p: "27e7e4c4f688ed3fecbf40c54396992024503d1b9bca4773878c98f907ecfeb1"
