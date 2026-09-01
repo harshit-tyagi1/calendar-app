@@ -891,6 +891,40 @@ function saveActivePlansSelection() {
     localStorage.setItem(key, JSON.stringify(state.selectedPlanIds));
 }
 
+function checkTaskRecurrenceMatch(recurrence, day, dayOfWeek, totalDays) {
+    if (!recurrence || recurrence === 'daily') return true;
+    if (recurrence === 'weekdays') return dayOfWeek >= 1 && dayOfWeek <= 5;
+    if (recurrence === 'weekends') return dayOfWeek === 0 || dayOfWeek === 6;
+    if (recurrence === 'mon_wed_fri') return dayOfWeek === 1 || dayOfWeek === 3 || dayOfWeek === 5;
+    if (recurrence === 'tue_thu_sat') return dayOfWeek === 2 || dayOfWeek === 4 || dayOfWeek === 6;
+    if (recurrence === 'alternate') return day % 2 === 1;
+
+    // Specific single day of the week
+    if (recurrence === 'only_sun') return dayOfWeek === 0;
+    if (recurrence === 'only_mon') return dayOfWeek === 1;
+    if (recurrence === 'only_tue') return dayOfWeek === 2;
+    if (recurrence === 'only_wed') return dayOfWeek === 3;
+    if (recurrence === 'only_thu') return dayOfWeek === 4;
+    if (recurrence === 'only_fri') return dayOfWeek === 5;
+    if (recurrence === 'only_sat') return dayOfWeek === 6;
+
+    // Skip a specific day of the week
+    if (recurrence === 'skip_sun') return dayOfWeek !== 0;
+    if (recurrence === 'skip_mon') return dayOfWeek !== 1;
+    if (recurrence === 'skip_tue') return dayOfWeek !== 2;
+    if (recurrence === 'skip_wed') return dayOfWeek !== 3;
+    if (recurrence === 'skip_thu') return dayOfWeek !== 4;
+    if (recurrence === 'skip_fri') return dayOfWeek !== 5;
+    if (recurrence === 'skip_sat') return dayOfWeek !== 6;
+
+    // Monthly milestones
+    if (recurrence === 'monthly_1st') return day === 1;
+    if (recurrence === 'monthly_15th') return day === 15;
+    if (recurrence === 'monthly_last') return day === totalDays;
+
+    return true;
+}
+
 /**
  * Merge multiple plans into deduplicated daily tasks for any month/year
  */
@@ -910,9 +944,6 @@ function generateMonthTasksFromPlans(planIds, year, month) {
     for (let day = 1; day <= totalDays; day++) {
         const date = new Date(year, month, day);
         const dayOfWeek = date.getDay();
-        const isTuesday = (dayOfWeek === 2);
-        const isWeekday = (dayOfWeek >= 1 && dayOfWeek <= 5);
-        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
         const tasksForDay = [];
         const seenTexts = new Set();
@@ -920,12 +951,7 @@ function generateMonthTasksFromPlans(planIds, year, month) {
         selectedPlans.forEach(plan => {
             plan.tasks.forEach((t, idx) => {
                 const recurrence = t.recurrence || 'daily';
-                let applies = false;
-
-                if (recurrence === 'daily') applies = true;
-                else if (recurrence === 'skip_tue' && !isTuesday) applies = true;
-                else if (recurrence === 'weekdays' && isWeekday) applies = true;
-                else if (recurrence === 'weekends' && isWeekend) applies = true;
+                const applies = checkTaskRecurrenceMatch(recurrence, day, dayOfWeek, totalDays);
 
                 if (applies && !seenTexts.has(t.text.toLowerCase())) {
                     seenTexts.add(t.text.toLowerCase());
@@ -1150,7 +1176,7 @@ function openCreatePlanModal() {
 
     addTaskBuilderRow('Wake up on time', 'Personal', 'daily');
     addTaskBuilderRow('Hydration Goal', 'Health', 'daily');
-    addTaskBuilderRow('Physical Movement', 'Health', 'daily');
+    addTaskBuilderRow('Physical Movement', 'Health', 'mon_wed_fri');
 
     DOM.createPlanBackdrop.classList.remove('hidden');
     DOM.planNameInput.focus();
@@ -1174,27 +1200,80 @@ function addTaskBuilderRow(defaultText = '', defaultCat = 'Personal', defaultRec
 
     const selectRecurrence = document.createElement('select');
     selectRecurrence.className = 'task-builder-recurrence';
-    selectRecurrence.innerHTML = `
-        <option value="daily" ${defaultRecurrence === 'daily' ? 'selected' : ''}>Every Day</option>
-        <option value="skip_tue" ${defaultRecurrence === 'skip_tue' ? 'selected' : ''}>Skip Tuesday</option>
-        <option value="weekdays" ${defaultRecurrence === 'weekdays' ? 'selected' : ''}>Weekdays Only</option>
-        <option value="weekends" ${defaultRecurrence === 'weekends' ? 'selected' : ''}>Weekends Only</option>
-    `;
+
+    const recurrenceGroups = (CFG.recurrenceOptions) || [
+        {
+            group: "Standard Frequencies",
+            options: [
+                { value: "daily", label: "Every Day" },
+                { value: "weekdays", label: "Weekdays (Mon - Fri)" },
+                { value: "weekends", label: "Weekends (Sat - Sun)" },
+                { value: "mon_wed_fri", label: "Mon, Wed, Fri (MWF)" },
+                { value: "tue_thu_sat", label: "Tue, Thu, Sat (TTS)" },
+                { value: "alternate", label: "Alternate Days (1st, 3rd, 5th...)" }
+            ]
+        },
+        {
+            group: "Specific Day of Week (Once a Week)",
+            options: [
+                { value: "only_mon", label: "Mondays Only" },
+                { value: "only_tue", label: "Tuesdays Only" },
+                { value: "only_wed", label: "Wednesdays Only" },
+                { value: "only_thu", label: "Thursdays Only" },
+                { value: "only_fri", label: "Fridays Only" },
+                { value: "only_sat", label: "Saturdays Only" },
+                { value: "only_sun", label: "Sundays Only" }
+            ]
+        },
+        {
+            group: "Skip One Day of the Week",
+            options: [
+                { value: "skip_sun", label: "Skip Sunday (Mon - Sat)" },
+                { value: "skip_mon", label: "Skip Monday" },
+                { value: "skip_tue", label: "Skip Tuesday" },
+                { value: "skip_wed", label: "Skip Wednesday" },
+                { value: "skip_thu", label: "Skip Thursday" },
+                { value: "skip_fri", label: "Skip Friday" },
+                { value: "skip_sat", label: "Skip Saturday" }
+            ]
+        },
+        {
+            group: "Monthly Milestones",
+            options: [
+                { value: "monthly_1st", label: "1st Day of Month" },
+                { value: "monthly_15th", label: "15th of Month" },
+                { value: "monthly_last", label: "Last Day of Month" }
+            ]
+        }
+    ];
+
+    let recHtml = '';
+    recurrenceGroups.forEach(grp => {
+        recHtml += `<optgroup label="${grp.group}">`;
+        grp.options.forEach(opt => {
+            const isSel = (opt.value === defaultRecurrence) ? 'selected' : '';
+            recHtml += `<option value="${opt.value}" ${isSel}>${opt.label}</option>`;
+        });
+        recHtml += `</optgroup>`;
+    });
+    selectRecurrence.innerHTML = recHtml;
 
     const selectCat = document.createElement('select');
     selectCat.className = 'task-builder-category';
-    selectCat.innerHTML = `
-        <option value="Personal" ${defaultCat === 'Personal' ? 'selected' : ''}>Personal</option>
-        <option value="Health" ${defaultCat === 'Health' ? 'selected' : ''}>Health</option>
-        <option value="Work" ${defaultCat === 'Work' ? 'selected' : ''}>Work</option>
-        <option value="Urgent" ${defaultCat === 'Urgent' ? 'selected' : ''}>Urgent</option>
-        <option value="General" ${defaultCat === 'General' ? 'selected' : ''}>General</option>
-    `;
+    const categories = (CFG.categories) || [
+        { id: "Personal", label: "Personal" },
+        { id: "Health", label: "Health" },
+        { id: "Work", label: "Work" },
+        { id: "Urgent", label: "Urgent" },
+        { id: "General", label: "General" }
+    ];
+    selectCat.innerHTML = categories.map(c => `<option value="${c.id}" ${defaultCat === c.id ? 'selected' : ''}>${c.label}</option>`).join('');
 
     const btnRemove = document.createElement('button');
     btnRemove.type = 'button';
     btnRemove.className = 'btn-builder-remove';
     btnRemove.innerHTML = `✕`;
+    btnRemove.title = 'Remove task';
     btnRemove.addEventListener('click', () => row.remove());
 
     row.appendChild(input);

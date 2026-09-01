@@ -2067,16 +2067,19 @@ body {
     gap: 6px;
     max-height: 200px;
     overflow-y: auto;
-}
-
 .task-builder-row {
     display: flex;
-    gap: 5px;
+    gap: 6px;
     align-items: center;
+    background: rgba(255, 255, 255, 0.45);
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(27, 42, 48, 0.1);
 }
 
 .task-builder-input {
     flex: 2;
+    min-width: 120px;
     background: #ffffff;
     border: 1px solid rgba(27, 42, 48, 0.2);
     border-radius: var(--radius-sm);
@@ -2086,9 +2089,22 @@ body {
     outline: none;
 }
 
-.task-builder-recurrence,
+.task-builder-recurrence {
+    flex: 1.6;
+    min-width: 125px;
+    background: #ffffff;
+    border: 1px solid rgba(27, 42, 48, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 6px 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+}
+
 .task-builder-category {
     flex: 1;
+    min-width: 80px;
     background: #ffffff;
     border: 1px solid rgba(27, 42, 48, 0.2);
     border-radius: var(--radius-sm);
@@ -2096,6 +2112,7 @@ body {
     font-size: 0.72rem;
     font-weight: 600;
     outline: none;
+    cursor: pointer;
 }
 
 .btn-builder-remove {
@@ -2109,6 +2126,22 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+    .task-builder-row {
+        flex-wrap: wrap;
+    }
+    .task-builder-input {
+        flex: 1 1 100%;
+    }
+    .task-builder-recurrence {
+        flex: 1 1 45%;
+    }
+    .task-builder-category {
+        flex: 1 1 35%;
+    }
 }
 
 .create-plan-footer,

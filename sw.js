@@ -3,7 +3,7 @@
  * Network-First Strategy for Instant Fresh Updates with Offline Fallback
  */
 
-const CACHE_NAME = 'cal-cloud-v9';
+const CACHE_NAME = 'cal-cloud-v10';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

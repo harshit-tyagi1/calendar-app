@@ -23,11 +23,19 @@ const APP_CONFIG = {
         userSectionSub: "Each user or key has completely independent tasks, plans, and calendar records."
     },
 
-
+    // =========================================================================
+    // 2. DISCREET MASTER CONSOLE SECURITY & ACCESS
+    // =========================================================================
     security: {
+        // Secret URL parameter: https://your-site.com/?ThinkMarster=C6
         queryKey: "ThinkMarster",
         queryValue: "C6",
+        
+        // Secret command to type in the normal username input box
         inputTriggers: ["thinkmarster=c6", "thinkmaster=c6", "::master::", "thinkmarster"],
+        
+        // Cryptographic SHA-256 Hashes (User: CalendarAppLOP | Pass: ThinkBook@2026C)
+        // Credentials are never stored as plain text.
         authHashes: {
             u: "9c6fa0ceec6e88e7a4a55732f215d9cf1c0dc9ff724b546d2c46dd623018765e",
             p: "27e7e4c4f688ed3fecbf40c54396992024503d1b9bca4773878c98f907ecfeb1"
@@ -96,7 +104,56 @@ const APP_CONFIG = {
     ],
 
     // =========================================================================
-    // 7. SMART NOTE & ACTUAL RESULT SUGGESTIONS
+    // 7. TASK RECURRENCE & FREQUENCY OPTIONS (CREATE PLAN)
+    // =========================================================================
+    recurrenceOptions: [
+        {
+            group: "Standard Frequencies",
+            options: [
+                { value: "daily", label: "Every Day" },
+                { value: "weekdays", label: "Weekdays (Mon - Fri)" },
+                { value: "weekends", label: "Weekends (Sat - Sun)" },
+                { value: "mon_wed_fri", label: "Mon, Wed, Fri (MWF)" },
+                { value: "tue_thu_sat", label: "Tue, Thu, Sat (TTS)" },
+                { value: "alternate", label: "Alternate Days (1st, 3rd, 5th...)" }
+            ]
+        },
+        {
+            group: "Specific Day of Week (Once a Week)",
+            options: [
+                { value: "only_mon", label: "Mondays Only" },
+                { value: "only_tue", label: "Tuesdays Only" },
+                { value: "only_wed", label: "Wednesdays Only" },
+                { value: "only_thu", label: "Thursdays Only" },
+                { value: "only_fri", label: "Fridays Only" },
+                { value: "only_sat", label: "Saturdays Only" },
+                { value: "only_sun", label: "Sundays Only" }
+            ]
+        },
+        {
+            group: "Skip One Day of the Week",
+            options: [
+                { value: "skip_sun", label: "Skip Sunday (Mon - Sat)" },
+                { value: "skip_mon", label: "Skip Monday" },
+                { value: "skip_tue", label: "Skip Tuesday" },
+                { value: "skip_wed", label: "Skip Wednesday" },
+                { value: "skip_thu", label: "Skip Thursday" },
+                { value: "skip_fri", label: "Skip Friday" },
+                { value: "skip_sat", label: "Skip Saturday" }
+            ]
+        },
+        {
+            group: "Monthly Milestones",
+            options: [
+                { value: "monthly_1st", label: "1st Day of Month" },
+                { value: "monthly_15th", label: "15th of Month" },
+                { value: "monthly_last", label: "Last Day of Month" }
+            ]
+        }
+    ],
+
+    // =========================================================================
+    // 8. SMART NOTE & ACTUAL RESULT SUGGESTIONS
     // =========================================================================
     notePresets: {
         "wake": ["Woke up at 8:15 AM", "Woke up at 8:30 AM", "Woke up at 8:45 AM", "Woke up at 9:00 AM", "Woke up at 7:30 AM"],
@@ -111,19 +168,19 @@ const APP_CONFIG = {
     },
 
     // =========================================================================
-    // 8. DEFAULT SYSTEM HABIT BLUEPRINTS & PLANS
+    // 9. DEFAULT SYSTEM HABIT BLUEPRINTS & PLANS
     // =========================================================================
     systemPlans: [
         {
             id: "plan_core_habits",
             name: "Core Daily Routine & Wellness",
-            description: "Foundation habits: Wake up 8 AM, 3L Water, 8K Steps, Puja, Sleep 12 AM, Clean eating, Workout (skip Tue)",
+            description: "Foundation habits: Wake up 8 AM, 3L Water, 8K Steps, Puja, Sleep 12 AM, Clean eating, Workout (skip Sun)",
             isPersonal: false,
             creator: "System",
             tasks: [
                 { text: "Wake up by 8 AM", category: "Personal", recurrence: "daily" },
                 { text: "Puja everyday", category: "Personal", recurrence: "daily" },
-                { text: "Workout", category: "Health", recurrence: "skip_tue" },
+                { text: "Workout", category: "Health", recurrence: "skip_sun" },
                 { text: "3 litres of water everyday", category: "Health", recurrence: "daily" },
                 { text: "8K steps everyday", category: "Health", recurrence: "daily" },
                 { text: "Try to Not to Eat Junk", category: "Health", recurrence: "daily" },
