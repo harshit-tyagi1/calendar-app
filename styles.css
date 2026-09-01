@@ -1665,6 +1665,20 @@ body {
     animation: fadeIn 0.2s ease-out;
 }
 
+.picker-modal-backdrop.hidden,
+.plans-modal-backdrop.hidden,
+.create-plan-backdrop.hidden,
+.import-modal-backdrop.hidden,
+.note-modal-backdrop.hidden,
+.user-modal-backdrop.hidden,
+.yesterday-drawer-backdrop.hidden,
+.sys-auth-backdrop.hidden,
+.welcome-screen-wrapper.hidden,
+.app-wrapper.hidden,
+.master-console-screen.hidden {
+    display: none !important;
+}
+
 .picker-modal,
 .plans-modal,
 .create-plan-modal,
