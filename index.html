@@ -152,9 +152,11 @@
                             <span>1st Day</span>
                         </button>
                         <button class="tool-btn" id="btnSoundToggle" title="Toggle audio feedback">
-                            <svg class="sound-icon-on" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                            <svg class="sound-icon-off hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
-                            <span id="soundStatusText">Sound</span>
+                            <span id="soundIconWrapper" style="display: inline-flex; align-items: center;">
+                                <svg class="sound-icon-on" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                <svg class="sound-icon-off" style="display: none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                            </span>
+                            <span id="soundStatusText">Sound On</span>
                         </button>
                         <button class="tool-btn" id="btnInstallPwa" title="Install as App on Phone / PC">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -651,32 +653,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- ============================================================
-             10. MOBILE BOTTOM NAVIGATION BAR
-             ============================================================ -->
-        <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile Navigation">
-            <button class="mobile-nav-item active" id="mNavTasks" data-view="tasks">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                <span>Tasks</span>
-            </button>
-            <button class="mobile-nav-item" id="mNavCalendar" data-view="calendar">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span>Calendar</span>
-            </button>
-            <button class="mobile-nav-item" id="mNavPlans" data-view="plans">
-                <span style="font-size: 16px;">📋</span>
-                <span>Plans</span>
-            </button>
-            <button class="mobile-nav-item" id="mNavUser" data-view="user">
-                <span style="font-size: 16px;">👥</span>
-                <span>User</span>
-            </button>
-            <button class="mobile-nav-item" id="mNavYesterday" data-view="yesterday">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                <span>Yesterday</span>
-            </button>
-        </nav>
 
     </div>
 

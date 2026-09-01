@@ -2312,50 +2312,7 @@ body {
     background: rgba(255, 255, 255, 0.6);
     color: var(--color-text-dark);
     border: 1px solid rgba(255, 255, 255, 0.8);
-}
-
-/* Mobile Bottom Nav */
-.mobile-bottom-nav {
-    display: none;
-    position: fixed;
-    bottom: 8px;
-    bottom: max(8px, env(safe-area-inset-bottom));
-    left: 12px;
-    right: 12px;
-    background: rgba(28, 37, 43, 0.95);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: var(--radius-pill);
-    padding: 5px 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    z-index: 150;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.mobile-nav-item {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.65);
-    padding: 5px 8px;
-    border-radius: var(--radius-pill);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    cursor: pointer;
-    font-family: var(--font-body);
-    font-size: 0.66rem;
-    font-weight: 700;
-}
-
-.mobile-nav-item.active {
-    color: var(--color-terracotta);
-}
-
-/* ==========================================================================
-   Keyframe Animations
-   ========================================================================== */
+/* Keyframe Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
@@ -2383,7 +2340,7 @@ body {
     body {
         padding: 8px;
         padding-top: max(8px, env(safe-area-inset-top));
-        padding-bottom: 74px;
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
         align-items: flex-start;
     }
 

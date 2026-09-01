@@ -2194,6 +2194,7 @@ function setupPWA() {
 }
 
 function setupMobileNav() {
+    if (!DOM.mobileNavItems || DOM.mobileNavItems.length === 0) return;
     DOM.mobileNavItems.forEach(item => {
         item.addEventListener('click', () => {
             DOM.mobileNavItems.forEach(btn => btn.classList.remove('active'));
@@ -2259,17 +2260,30 @@ function toggleSound() {
 }
 
 function updateSoundUI() {
+    if (!DOM.btnSoundToggle) return;
     const iconOn = DOM.btnSoundToggle.querySelector('.sound-icon-on');
     const iconOff = DOM.btnSoundToggle.querySelector('.sound-icon-off');
     
     if (state.soundEnabled) {
-        iconOn.classList.remove('hidden');
-        iconOff.classList.add('hidden');
-        DOM.soundStatusText.textContent = 'Sound On';
+        if (iconOn) {
+            iconOn.style.display = 'inline-block';
+            iconOn.classList.remove('hidden');
+        }
+        if (iconOff) {
+            iconOff.style.display = 'none';
+            iconOff.classList.add('hidden');
+        }
+        if (DOM.soundStatusText) DOM.soundStatusText.textContent = 'Sound On';
     } else {
-        iconOn.classList.add('hidden');
-        iconOff.classList.remove('hidden');
-        DOM.soundStatusText.textContent = 'Sound Off';
+        if (iconOn) {
+            iconOn.style.display = 'none';
+            iconOn.classList.add('hidden');
+        }
+        if (iconOff) {
+            iconOff.style.display = 'inline-block';
+            iconOff.classList.remove('hidden');
+        }
+        if (DOM.soundStatusText) DOM.soundStatusText.textContent = 'Sound Off';
     }
 }
 
