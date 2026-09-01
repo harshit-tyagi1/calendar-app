@@ -2169,21 +2169,28 @@ function setupPWA() {
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         state.deferredPrompt = e;
-        DOM.btnInstallPwa.classList.remove('hidden');
     });
 
-    DOM.btnInstallPwa.addEventListener('click', async () => {
-        if (!state.deferredPrompt) {
-            showNotificationToast('To install on iPhone/Safari: Tap Share -> Add to Home Screen');
-            return;
-        }
-        state.deferredPrompt.prompt();
-        const { outcome } = await state.deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            DOM.btnInstallPwa.classList.add('hidden');
-        }
-        state.deferredPrompt = null;
-    });
+    if (DOM.btnInstallPwa) {
+        DOM.btnInstallPwa.addEventListener('click', async () => {
+            AudioService.triggerHaptic(20);
+            if (!state.deferredPrompt) {
+                const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+                if (isIos) {
+                    showNotificationToast('To install on iPhone/iPad: Tap Share ➔ "Add to Home Screen"');
+                } else {
+                    showNotificationToast('To install: Click the Install icon in your address bar or browser menu ➔ Install App.');
+                }
+                return;
+            }
+            state.deferredPrompt.prompt();
+            const { outcome } = await state.deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                showNotificationToast('App installed successfully!');
+            }
+            state.deferredPrompt = null;
+        });
+    }
 }
 
 function setupMobileNav() {
@@ -2762,7 +2769,7 @@ function setupEventListeners() {
     });
 
     DOM.btnSoundToggle.addEventListener('click', toggleSound);
-    DOM.btnPrint.addEventListener('click', () => window.print());
+    if (DOM.btnPrint) DOM.btnPrint.addEventListener('click', () => window.print());
 
     // User & Sync Modal
     DOM.btnOpenUserModal.addEventListener('click', openUserModal);
