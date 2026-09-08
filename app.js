@@ -19,8 +19,8 @@ const CONFIG = {
     SOUND_KEY: (CFG.storageKeys && CFG.storageKeys.soundPrefKey) || 'cal_sound_pref'
 };
 
-// Google Firebase Configuration
-const FIREBASE_CONFIG = CFG.firebase || {
+// Google Firebase Configuration (Dynamically resolved from .env / .env.local / config.js)
+let FIREBASE_CONFIG = Object.assign({}, (CFG && CFG.firebase) || {
     apiKey: "AIzaSyCqFA3TgrKIU-W9_LfMGgxcnIeiiwhocBg",
     authDomain: "calendar-planner-sync-9b2e0.firebaseapp.com",
     databaseURL: "https://calendar-planner-sync-9b2e0-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -28,7 +28,7 @@ const FIREBASE_CONFIG = CFG.firebase || {
     storageBucket: "calendar-planner-sync-9b2e0.firebasestorage.app",
     messagingSenderId: "206555989510",
     appId: "1:206555989510:web:ea74e87ad022475cc6a587"
-};
+});
 
 // Discreet Cryptographic Security Hashes (SHA-256 - No plain text in source code)
 const _SYS_AUTH_HASH = (CFG.security && CFG.security.authHashes) || {
@@ -54,14 +54,17 @@ let activeFirebaseListenerRef = null;
 let masterCloudUsersData = {};
 let selectedMasterInspectUser = null;
 
-function initFirebaseSync() {
-    if (typeof firebase !== 'undefined' && !firebaseDb) {
+function initFirebaseSync(customConfig) {
+    if (typeof firebase !== 'undefined') {
+        const activeCfg = customConfig || (window.APP_CONFIG && window.APP_CONFIG.firebase) || FIREBASE_CONFIG;
         try {
             if (!firebase.apps.length) {
-                firebase.initializeApp(FIREBASE_CONFIG);
+                firebase.initializeApp(activeCfg);
+                firebaseDb = firebase.database();
+                console.log('✅ Firebase Realtime Database initialized successfully with active config!');
+            } else if (!firebaseDb) {
+                firebaseDb = firebase.database();
             }
-            firebaseDb = firebase.database();
-            console.log('✅ Firebase Realtime Database initialized successfully!');
         } catch (e) {
             console.warn('Firebase initialization error:', e);
         }
@@ -2937,7 +2940,19 @@ function setupEventListeners() {
     setupCrossDeviceSyncChannel();
 }
 
-function initApp() {
+async function initApp() {
+    // 1. Resolve .env / .env.local environment variables if available
+    if (typeof APP_CONFIG !== 'undefined' && typeof APP_CONFIG.loadEnvironment === 'function') {
+        try {
+            const loadedEnv = await APP_CONFIG.loadEnvironment();
+            if (loadedEnv) {
+                Object.assign(FIREBASE_CONFIG, loadedEnv);
+            }
+        } catch (e) {
+            console.log('Environment resolution:', e);
+        }
+    }
+
     initFirebaseSync();
     loadProfilesList();
     updateSoundUI();
@@ -2955,4 +2970,5 @@ function initApp() {
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
+
 

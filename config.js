@@ -5,6 +5,57 @@
  * All changes made here will automatically reflect across the entire application.
  */
 
+// =========================================================================
+// ENVIRONMENT VARIABLES & SECRETS PARSER (.env / .env.local)
+// =========================================================================
+
+function parseEnvString(envString) {
+    if (!envString || typeof envString !== 'string') return {};
+    const envObj = {};
+    const lines = envString.split(/\r?\n/);
+    for (let rawLine of lines) {
+        let line = rawLine.trim();
+        if (!line || line.startsWith('#') || line.startsWith('//')) continue;
+        const eqIdx = line.indexOf('=');
+        if (eqIdx > 0) {
+            const key = line.substring(0, eqIdx).trim();
+            let val = line.substring(eqIdx + 1).trim();
+            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                val = val.substring(1, val.length - 1);
+            }
+            envObj[key] = val;
+        }
+    }
+    return envObj;
+}
+
+function mapEnvToFirebaseConfig(env) {
+    if (!env || typeof env !== 'object') return null;
+    const mapped = {};
+    const apiKey = env.FIREBASE_API_KEY || env.VITE_FIREBASE_API_KEY || env.REACT_APP_FIREBASE_API_KEY || env.NEXT_PUBLIC_FIREBASE_API_KEY;
+    if (apiKey) mapped.apiKey = apiKey;
+
+    const authDomain = env.FIREBASE_AUTH_DOMAIN || env.VITE_FIREBASE_AUTH_DOMAIN || env.REACT_APP_FIREBASE_AUTH_DOMAIN || env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
+    if (authDomain) mapped.authDomain = authDomain;
+
+    const databaseURL = env.FIREBASE_DATABASE_URL || env.VITE_FIREBASE_DATABASE_URL || env.REACT_APP_FIREBASE_DATABASE_URL || env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
+    if (databaseURL) mapped.databaseURL = databaseURL;
+
+    const projectId = env.FIREBASE_PROJECT_ID || env.VITE_FIREBASE_PROJECT_ID || env.REACT_APP_FIREBASE_PROJECT_ID || env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    if (projectId) mapped.projectId = projectId;
+
+    const storageBucket = env.FIREBASE_STORAGE_BUCKET || env.VITE_FIREBASE_STORAGE_BUCKET || env.REACT_APP_FIREBASE_STORAGE_BUCKET || env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+    if (storageBucket) mapped.storageBucket = storageBucket;
+
+    const messagingSenderId = env.FIREBASE_MESSAGING_SENDER_ID || env.VITE_FIREBASE_MESSAGING_SENDER_ID || env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID;
+    if (messagingSenderId) mapped.messagingSenderId = messagingSenderId;
+
+    const appId = env.FIREBASE_APP_ID || env.VITE_FIREBASE_APP_ID || env.REACT_APP_FIREBASE_APP_ID || env.NEXT_PUBLIC_FIREBASE_APP_ID;
+    if (appId) mapped.appId = appId;
+
+    return Object.keys(mapped).length > 0 ? mapped : null;
+}
+
 const APP_CONFIG = {
     // =========================================================================
     // 1. APP BRANDING & HEADERS
@@ -44,6 +95,7 @@ const APP_CONFIG = {
 
     // =========================================================================
     // 3. GOOGLE FIREBASE REALTIME CLOUD SYNC CONFIGURATION
+    // (Can be overridden by .env or .env.local)
     // =========================================================================
     firebase: {
         apiKey: "AIzaSyCqFA3TgrKIU-W9_LfMGgxcnIeiiwhocBg",
@@ -53,6 +105,57 @@ const APP_CONFIG = {
         storageBucket: "calendar-planner-sync-9b2e0.firebasestorage.app",
         messagingSenderId: "206555989510",
         appId: "1:206555989510:web:ea74e87ad022475cc6a587"
+    },
+
+    /**
+     * Asynchronously loads environment variables from .env.local or .env,
+     * merging any Firebase credentials found into APP_CONFIG.firebase.
+     */
+    loadEnvironment: async function() {
+        // 1. Check window.__ENV__ or window.ENV if defined synchronously
+        if (typeof window !== 'undefined') {
+            const globalEnv = window.__ENV__ || window.ENV || window.ENV_VARS;
+            if (globalEnv) {
+                const mapped = mapEnvToFirebaseConfig(globalEnv);
+                if (mapped) Object.assign(APP_CONFIG.firebase, mapped);
+            }
+        }
+
+        // 2. Try fetching .env.local (Highest local priority)
+        try {
+            const resLocal = await fetch('.env.local', { cache: 'no-store' });
+            if (resLocal.ok) {
+                const text = await resLocal.text();
+                const parsed = parseEnvString(text);
+                const mapped = mapEnvToFirebaseConfig(parsed);
+                if (mapped) {
+                    Object.assign(APP_CONFIG.firebase, mapped);
+                    console.log('⚡ Firebase credentials loaded from .env.local');
+                    return APP_CONFIG.firebase;
+                }
+            }
+        } catch (e) {
+            // Local fetch may not be supported in some environments, continue to .env
+        }
+
+        // 3. Try fetching .env (Standard priority)
+        try {
+            const resEnv = await fetch('.env', { cache: 'no-store' });
+            if (resEnv.ok) {
+                const text = await resEnv.text();
+                const parsed = parseEnvString(text);
+                const mapped = mapEnvToFirebaseConfig(parsed);
+                if (mapped) {
+                    Object.assign(APP_CONFIG.firebase, mapped);
+                    console.log('⚡ Firebase credentials loaded from .env');
+                    return APP_CONFIG.firebase;
+                }
+            }
+        } catch (e) {
+            // Silently continue to fallback
+        }
+
+        return APP_CONFIG.firebase;
     },
 
     // =========================================================================

@@ -1,0 +1,21 @@
+# =========================================================================
+# Environment Variables & Local Secrets (NEVER COMMIT SENSITIVE API KEYS)
+# =========================================================================
+.env
+.env.local
+.env.*.local
+env.js
+env.local.js
+config.local.js
+
+# Build Artifacts & Temporary Files
+node_modules/
+dist/
+.cache/
+
+# System & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
