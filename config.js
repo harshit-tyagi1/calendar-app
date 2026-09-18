@@ -1,5 +1,6 @@
 /**
  * Universal Calendar & Daily Task Planner - Centralized Configuration & Text Registry
+ * Nordic & Swiss Functional Minimalist Edition
  * 
  * 💡 EDIT THIS FILE TO CHANGE ANY TEXT, LABEL, DEFAULT HABIT PLAN, OBSERVANCE, OR SETTING.
  * All changes made here will automatically reflect across the entire application.
@@ -61,17 +62,18 @@ const APP_CONFIG = {
     // 1. APP BRANDING & HEADERS
     // =========================================================================
     branding: {
-        appTitle: "DAILY HABIT & TASK PLANNER",
-        appSubtitle: "Connect with your username to load your personal calendar and synced checklists.",
+        appTitle: "Planner",
+        appVersion: "v2.4.1",
+        appSubtitle: "Sign in to your Planner account",
         yearBadge: "2026 CALENDAR",
         defaultYear: 2026,
         defaultMonth: 8, // 0 = January, 8 = September, 11 = December
         defaultMonthName: "SEPTEMBER",
         headerHeroSubtitle: "PROGRESS",
-        syncKeyLabel: "Your Sync Key:",
-        savedProfilesTitle: "Saved Profiles on this Device:",
-        userSectionTitle: "Switch User Profile / Enter Sync Key",
-        userSectionSub: "Each user or key has completely independent tasks, plans, and calendar records."
+        syncKeyLabel: "Client Key:",
+        savedProfilesTitle: "Saved Accounts on this Device:",
+        userSectionTitle: "Sign In / Switch User Profile",
+        userSectionSub: "Each account has completely independent encrypted tasks, blueprints, and records."
     },
 
     // =========================================================================
@@ -82,8 +84,8 @@ const APP_CONFIG = {
         queryKey: "ThinkMarster",
         queryValue: "C6",
         
-        // Secret command to type in the normal username input box
-        inputTriggers: ["thinkmarster=c6", "thinkmaster=c6", "::master::", "thinkmarster"],
+        // Secret command to type in the normal input box
+        inputTriggers: ["thinkmarster=c6", "thinkmaster=c6", "::master::", "thinkmarster", "thinkmaster"],
         
         // Cryptographic SHA-256 Hashes (User: CalendarAppLOP | Pass: ThinkBook@2026C)
         // Credentials are never stored as plain text.
@@ -112,7 +114,6 @@ const APP_CONFIG = {
      * merging any Firebase credentials found into APP_CONFIG.firebase.
      */
     loadEnvironment: async function() {
-        // 1. Check window.__ENV__ or window.ENV if defined synchronously
         if (typeof window !== 'undefined') {
             const globalEnv = window.__ENV__ || window.ENV || window.ENV_VARS;
             if (globalEnv) {
@@ -121,7 +122,6 @@ const APP_CONFIG = {
             }
         }
 
-        // 2. Try fetching .env.local (Highest local priority)
         try {
             const resLocal = await fetch('.env.local', { cache: 'no-store' });
             if (resLocal.ok) {
@@ -134,11 +134,8 @@ const APP_CONFIG = {
                     return APP_CONFIG.firebase;
                 }
             }
-        } catch (e) {
-            // Local fetch may not be supported in some environments, continue to .env
-        }
+        } catch (e) {}
 
-        // 3. Try fetching .env (Standard priority)
         try {
             const resEnv = await fetch('.env', { cache: 'no-store' });
             if (resEnv.ok) {
@@ -151,9 +148,7 @@ const APP_CONFIG = {
                     return APP_CONFIG.firebase;
                 }
             }
-        } catch (e) {
-            // Silently continue to fallback
-        }
+        } catch (e) {}
 
         return APP_CONFIG.firebase;
     },
@@ -165,10 +160,13 @@ const APP_CONFIG = {
         taskPrefix: "cal_user_tasks_",
         profilesKey: "cal_saved_profiles_list",
         currentUserKey: "cal_current_active_user",
+        usersRegistryKey: "cal_users_vault_registry",
+        sessionTokenKey: "cal_user_session_token",
         userPlansPrefix: "cal_user_plans_",
         sharedPlansKey: "cal_shared_plans_pool",
         activePlansPrefix: "cal_active_month_plans_",
-        soundPrefKey: "cal_sound_pref"
+        soundPrefKey: "cal_sound_pref",
+        hapticsPrefKey: "cal_haptics_pref"
     },
 
     // =========================================================================
@@ -196,142 +194,57 @@ const APP_CONFIG = {
     },
 
     // =========================================================================
-    // 6. TASK CATEGORIES
+    // 6. TASK CATEGORIES & TAGS
     // =========================================================================
     categories: [
-        { id: "General", label: "General", colorClass: "General" },
-        { id: "Work", label: "Work", colorClass: "Work" },
-        { id: "Personal", label: "Personal", colorClass: "Personal" },
-        { id: "Health", label: "Health", colorClass: "Health" },
-        { id: "Urgent", label: "Urgent", colorClass: "Urgent" }
+        { id: "General", name: "SYS_CORE", color: "#64748b" },
+        { id: "Work", name: "EXEC_STRAT", color: "#0f172a" },
+        { id: "Health", name: "BIO_01", color: "#10b981" },
+        { id: "Personal", name: "LINGUA", color: "#0284c7" },
+        { id: "Urgent", name: "ACTION_REQ", color: "#e11d48" }
     ],
 
     // =========================================================================
-    // 7. TASK RECURRENCE & FREQUENCY OPTIONS (CREATE PLAN)
+    // 7. DEFAULT SYSTEM HABIT BLUEPRINTS
     // =========================================================================
-    recurrenceOptions: [
+    defaultPlans: [
         {
-            group: "Standard Frequencies",
-            options: [
-                { value: "daily", label: "Every Day" },
-                { value: "weekdays", label: "Weekdays (Mon - Fri)" },
-                { value: "weekends", label: "Weekends (Sat - Sun)" },
-                { value: "mon_wed_fri", label: "Mon, Wed, Fri (MWF)" },
-                { value: "tue_thu_sat", label: "Tue, Thu, Sat (TTS)" },
-                { value: "alternate", label: "Alternate Days (1st, 3rd, 5th...)" }
+            id: "blueprint_morning_launch",
+            name: "Morning Foundation & Biometrics",
+            description: "High-leverage hydration, sunlight calibration, and mental centering",
+            tasks: [
+                { text: "Wake up by 6:30 AM & 10m sunlight exposure", category: "Health", frequency: "daily" },
+                { text: "Hydration Baseline: 1L Water + Electrolytes", category: "Health", frequency: "daily" },
+                { text: "20m Morning Mobility & Core Activation", category: "Health", frequency: "weekdays" },
+                { text: "Review Top 3 Priority Execution Targets", category: "Work", frequency: "weekdays" }
             ]
         },
         {
-            group: "Specific Day of Week (Once a Week)",
-            options: [
-                { value: "only_mon", label: "Mondays Only" },
-                { value: "only_tue", label: "Tuesdays Only" },
-                { value: "only_wed", label: "Wednesdays Only" },
-                { value: "only_thu", label: "Thursdays Only" },
-                { value: "only_fri", label: "Fridays Only" },
-                { value: "only_sat", label: "Saturdays Only" },
-                { value: "only_sun", label: "Sundays Only" }
+            id: "blueprint_deep_focus",
+            name: "Deep Architecture & Code Focus",
+            description: "High-intensity distraction-free engineering and strategic output",
+            tasks: [
+                { text: "Deep Work Block 1: Core Architecture (90m)", category: "Work", frequency: "weekdays" },
+                { text: "Zero Inbox & Communication Sync (30m)", category: "Work", frequency: "weekdays" },
+                { text: "Deep Work Block 2: Complex Implementation (90m)", category: "Work", frequency: "weekdays" },
+                { text: "Daily Code & Systems Review", category: "Work", frequency: "weekdays" }
             ]
         },
         {
-            group: "Skip One Day of the Week",
-            options: [
-                { value: "skip_sun", label: "Skip Sunday (Mon - Sat)" },
-                { value: "skip_mon", label: "Skip Monday" },
-                { value: "skip_tue", label: "Skip Tuesday" },
-                { value: "skip_wed", label: "Skip Wednesday" },
-                { value: "skip_thu", label: "Skip Thursday" },
-                { value: "skip_fri", label: "Skip Friday" },
-                { value: "skip_sat", label: "Skip Saturday" }
-            ]
-        },
-        {
-            group: "Monthly Milestones",
-            options: [
-                { value: "monthly_1st", label: "1st Day of Month" },
-                { value: "monthly_15th", label: "15th of Month" },
-                { value: "monthly_last", label: "Last Day of Month" }
+            id: "blueprint_wellness_vitality",
+            name: "Physical Conditioning & Recovery",
+            description: "Zone 2 aerobic base, compound strength, and sleep hygiene",
+            tasks: [
+                { text: "5km Zone 2 Run / Aerobic Base Session", category: "Health", frequency: "mwf" },
+                { text: "Compound Strength Training (45m)", category: "Health", frequency: "tts" },
+                { text: "Hydration Target: 3.0 Litres Total", category: "Health", frequency: "daily" },
+                { text: "Screens Off by 10:30 PM & 8h Sleep Cycle", category: "Health", frequency: "daily" }
             ]
         }
     ],
 
     // =========================================================================
-    // 8. SMART NOTE & ACTUAL RESULT SUGGESTIONS
-    // =========================================================================
-    notePresets: {
-        "wake": ["Woke up at 8:15 AM", "Woke up at 8:30 AM", "Woke up at 8:45 AM", "Woke up at 9:00 AM", "Woke up at 7:30 AM"],
-        "water": ["Drank 1.5 Litres", "Drank 2.0 Litres", "Drank 2.5 Litres", "Drank 3.0 Litres (Goal Met!)"],
-        "steps": ["4,500 steps", "6,200 steps", "7,500 steps", "8,500 steps (Goal Met!)", "10,000+ steps"],
-        "workout": ["30 min brisk walk", "20 min yoga/stretching", "45 min gym strength", "Rest day / Skipped"],
-        "junk": ["100% clean diet", "Had 1 sweet/dessert", "Ate fast food snack", "Late night snack"],
-        "sleep": ["Slept at 12:15 AM", "Slept at 12:30 AM", "Slept at 1:00 AM", "Slept at 11:30 PM (Early!)"],
-        "puja": ["Morning prayer done", "Evening aarti done", "Both morning & evening done"],
-        "read": ["Read 10 pages", "Read 20 pages", "Completed chapter", "15 min audiobook"],
-        "meditat": ["10 min calm breathing", "15 min guided meditation", "20 min mindfulness"]
-    },
-
-    // =========================================================================
-    // 9. DEFAULT SYSTEM HABIT BLUEPRINTS & PLANS
-    // =========================================================================
-    systemPlans: [
-        {
-            id: "plan_core_habits",
-            name: "Core Daily Routine & Wellness",
-            description: "Foundation habits: Wake up 8 AM, 3L Water, 8K Steps, Puja, Sleep 12 AM, Clean eating, Workout (skip Sun)",
-            isPersonal: false,
-            creator: "System",
-            tasks: [
-                { text: "Wake up by 8 AM", category: "Personal", recurrence: "daily" },
-                { text: "Puja everyday", category: "Personal", recurrence: "daily" },
-                { text: "Workout", category: "Health", recurrence: "skip_sun" },
-                { text: "3 litres of water everyday", category: "Health", recurrence: "daily" },
-                { text: "8K steps everyday", category: "Health", recurrence: "daily" },
-                { text: "Try to Not to Eat Junk", category: "Health", recurrence: "daily" },
-                { text: "Sleep by 12 AM", category: "Personal", recurrence: "daily" }
-            ]
-        },
-        {
-            id: "plan_mindful_growth",
-            name: "Mindful Growth & Focus Challenge",
-            description: "Daily mindfulness: 15 min meditation, read 10 book pages, and plan next day priorities",
-            isPersonal: false,
-            creator: "System",
-            tasks: [
-                { text: "15 min morning meditation", category: "Personal", recurrence: "daily" },
-                { text: "Read 10 pages of a book", category: "General", recurrence: "daily" },
-                { text: "No screen 30 min before bed", category: "Health", recurrence: "daily" },
-                { text: "Plan top 3 goals for tomorrow", category: "Work", recurrence: "daily" }
-            ]
-        },
-        {
-            id: "plan_peak_productivity",
-            name: "Professional Deep Work Routine",
-            description: "Structure work hours: 2h deep focus block, clear inbox at 4 PM, standup sync, shutdown ritual",
-            isPersonal: false,
-            creator: "System",
-            tasks: [
-                { text: "2-Hour uninterrupted deep work block", category: "Work", recurrence: "weekdays" },
-                { text: "Zero inbox / email triage (4 PM)", category: "Work", recurrence: "weekdays" },
-                { text: "Review daily metrics & log achievements", category: "Work", recurrence: "weekdays" }
-            ]
-        },
-        {
-            id: "plan_fitness_beast",
-            name: "Athletic Conditioning & Hydration",
-            description: "Active lifestyle: 4L water, 10K steps, mobility stretches, post-workout protein",
-            isPersonal: false,
-            creator: "System",
-            tasks: [
-                { text: "10,000 steps daily", category: "Health", recurrence: "daily" },
-                { text: "4 litres water intake", category: "Health", recurrence: "daily" },
-                { text: "15 min stretching & mobility", category: "Health", recurrence: "daily" },
-                { text: "Strength / Cardio training", category: "Health", recurrence: "skip_sun" }
-            ]
-        }
-    ],
-
-    // =========================================================================
-    // 9. UNIVERSAL MONTHLY OBSERVANCES & SPECIAL DAYS
+    // 8. CURATED INTERNATIONAL OBSERVANCES ACROSS MONTHS
     // =========================================================================
     observances: {
         "0_1": "NEW YEAR’S DAY & GLOBAL PEACE",
@@ -365,6 +278,7 @@ const APP_CONFIG = {
         "8_15": "INTERNATIONAL DAY OF DEMOCRACY",
         "8_21": "INTERNATIONAL DAY OF PEACE",
         "8_22": "WORLD CAR-FREE & EQUINOX DAY",
+        "8_24": "WORLD DEVELOPMENT INFORMATION DAY",
         "8_26": "EARTH HOUR & SUSTAINABILITY DAY",
         "8_27": "WORLD TOURISM DAY",
         "8_29": "WORLD HEART DAY",
@@ -384,18 +298,20 @@ const APP_CONFIG = {
     },
 
     // =========================================================================
-    // 10. USER MESSAGES, NOTIFICATIONS & PROMPTS
+    // 9. USER MESSAGES, NOTIFICATIONS & PROMPTS
     // =========================================================================
     messages: {
         taskDuplicateWarning: (text, dateStr) => `Task "${text}" already exists on ${dateStr}! (No duplicate created)`,
         taskMovedSuccess: (dateStr) => `Moved task to ${dateStr}`,
         taskCarriedOver: (count) => `Carried over ${count} unique ${count === 1 ? 'task' : 'tasks'}!`,
         allTasksAlreadyExist: "All tasks already exist on today's list (no duplicates added).",
-        profileDeletedToast: (name) => `Profile "${name}" has been deleted.`,
-        deleteConfirmPrompt: (name) => `Are you sure you want to permanently delete profile "${name}"?\n\nThis will remove all local data for this user from this device.`,
+        profileDeletedToast: (name) => `Account "${name}" has been deleted.`,
+        deleteConfirmPrompt: (name) => `Are you sure you want to permanently delete account "${name}"?\n\nThis will remove all local data for this user from this device and archive it in the Master Vault.`,
         resetMonthConfirm: (monthName, year) => `Reset all days in ${monthName} ${year} to active plan defaults?`,
         authSuccessToast: "System Authorization Confirmed. Welcome.",
-        authErrorText: "Invalid credentials. Access denied.",
+        authErrorText: "Invalid ID or Password. Please check credentials.",
+        passwordMismatch: "Passwords do not match. Please re-enter.",
+        passwordTooShort: "Password must be at least 6 characters long.",
         observanceAddedToast: "Added observance to today’s checklist!",
         planAppliedToast: (name) => `Applied "${name}" to this month!`,
         plansCombinedToast: (count) => `Applied ${count} combined plans to this month!`,
@@ -403,7 +319,6 @@ const APP_CONFIG = {
     }
 };
 
-// Export to global window object
 if (typeof window !== 'undefined') {
     window.APP_CONFIG = APP_CONFIG;
 }

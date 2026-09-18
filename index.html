@@ -2,793 +2,1100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Universal Calendar & Daily Task Planner</title>
-    <meta name="description" content="Custom Universal Calendar & Task Planner with Monthly Plan Templates, Multi-Plan Combination, Multi-User Cloud Sync, and PWA support.">
-    
-    <!-- PWA & Mobile Web App Meta -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1c252b">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="TaskCalendar">
-    <link rel="apple-touch-icon" href="assets/icon-192.png">
-    <link rel="icon" type="image/png" href="assets/icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="Universal Calendar, Habit Matrix & Daily Task Planner with Realtime Cloud Sync">
+    <title>Planner • Nordic Productivity & Habit Matrix</title>
 
-    <!-- Google Fonts -->
+    <!-- Web App & PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><rect x='2' y='4' width='20' height='18' rx='4'/><path d='M8 2v4M16 2v4M2 10h20' stroke='white' stroke-width='2'/></svg>">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <!-- 1. WELCOME & USER CREATION / LOGIN LANDING SCREEN -->
-    <div class="welcome-screen-wrapper" id="welcomeScreen">
-        <div class="welcome-card">
-            <div class="welcome-scenic-header">
-                <div class="welcome-scenic-img"></div>
-                <div class="welcome-scenic-overlay"></div>
-                <div class="welcome-brand">
-                    <span class="welcome-badge" id="welcomeYearBadge">2026 CALENDAR</span>
-                    <h1 class="welcome-title">DAILY HABIT & TASK PLANNER</h1>
-                    <p class="welcome-sub">Connect with your username to load your personal calendar and synced checklists.</p>
+    <!-- =========================================================================
+         1. AUTHENTICATION & SECURE ACCESS SCREEN
+         ========================================================================= -->
+    <div class="auth-screen-wrapper" id="authScreen">
+        <div class="auth-ambient-glow-1"></div>
+        <div class="auth-ambient-glow-2"></div>
+
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-brand-logo">
+                    <div class="logo-dot-matrix">
+                        <span class="logo-dot green"></span>
+                        <span class="logo-dot slate"></span>
+                        <span class="logo-dot slate"></span>
+                        <span class="logo-dot cyan"></span>
+                    </div>
                 </div>
+                <div class="auth-title-row">
+                    <h1 class="auth-title" id="authTitleText">Planner</h1>
+                    <span class="auth-version-badge">v2.4.1</span>
+                </div>
+                <p class="auth-subtitle" id="authSubtitleText">Sign in to your Planner account</p>
             </div>
 
-            <div class="welcome-body">
-                <form class="auth-form" id="authForm" onsubmit="return false;">
-                    <label class="auth-label" for="authUsernameInput">ENTER YOUR USERNAME / SYNC KEY</label>
-                    <div class="auth-input-group">
-                        <span class="auth-input-icon">👤</span>
+            <!-- Auth Mode Switcher (Sign In vs Sign Up) -->
+            <div class="auth-mode-tabs" id="authModeTabs">
+                <button type="button" class="auth-tab-btn active" id="tabModeSignIn" data-mode="signin">Sign In</button>
+                <button type="button" class="auth-tab-btn" id="tabModeSignUp" data-mode="signup">Create Account</button>
+            </div>
+
+            <!-- Error Banner -->
+            <div class="auth-error-banner hidden" id="authErrorBanner">
+                <span class="material-symbols-outlined text-[18px]">error</span>
+                <span id="authErrorMsg">Invalid ID or password.</span>
+            </div>
+
+            <!-- Authentication Form -->
+            <form class="auth-form" id="authForm" onsubmit="return false;">
+                <!-- User ID / Email -->
+                <div class="auth-field-group">
+                    <label class="auth-label" for="authIdInput">User ID / Email</label>
+                    <div class="auth-input-container">
+                        <span class="material-symbols-outlined auth-input-icon">mail</span>
                         <input 
                             type="text" 
-                            id="authUsernameInput" 
-                            class="auth-text-input" 
-                            placeholder="e.g. Alex, HomePlanner, Sarah..." 
-                            autocomplete="off" 
+                            id="authIdInput" 
+                            class="auth-input" 
+                            placeholder="e.g. alex or name@example.com" 
+                            autocomplete="username" 
                             required 
                         />
-                        <button type="button" class="btn-magic-unique" id="btnGenerateUnique" title="Auto-generate a unique username">
-                            <span>✨ Generate Unique</span>
-                        </button>
-                    </div>
-
-                    <div class="auth-actions">
-                        <button type="submit" class="btn-auth-submit" id="btnAuthSubmit">
-                            <span>Continue to Calendar</span>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Quick Saved Profiles on Device -->
-                <div class="saved-profiles-section" id="savedProfilesSection">
-                    <span class="saved-profiles-label">OR SELECT RECENT PROFILE:</span>
-                    <div class="saved-profiles-grid" id="savedProfilesGrid">
-                        <!-- Dynamic saved user buttons injected by JS -->
                     </div>
                 </div>
 
-                <div class="auth-footer-notes">
-                    <small>🔒 Your tasks, plans, and habit records are stored specifically for your username.</small>
+                <!-- Password -->
+                <div class="auth-field-group">
+                    <div class="auth-label-row">
+                        <label class="auth-label" for="authPasswordInput">Password</label>
+                    </div>
+                    <div class="auth-input-container">
+                        <span class="material-symbols-outlined auth-input-icon">lock</span>
+                        <input 
+                            type="password" 
+                            id="authPasswordInput" 
+                            class="auth-input has-toggle" 
+                            placeholder="••••••••••••" 
+                            autocomplete="current-password" 
+                            required 
+                        />
+                        <button type="button" class="btn-toggle-pwd" id="btnToggleAuthPwd" title="Show/Hide Password">
+                            <span class="material-symbols-outlined text-[18px]" id="authPwdEyeIcon">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Confirm Password (Sign Up Mode Only) -->
+                <div class="auth-field-group hidden" id="confirmPasswordGroup">
+                    <label class="auth-label" for="authConfirmPasswordInput">Confirm Password</label>
+                    <div class="auth-input-container">
+                        <span class="material-symbols-outlined auth-input-icon">lock_reset</span>
+                        <input 
+                            type="password" 
+                            id="authConfirmPasswordInput" 
+                            class="auth-input" 
+                            placeholder="Re-enter password" 
+                            autocomplete="new-password" 
+                        />
+                    </div>
+                </div>
+
+                <!-- Remember Device Option -->
+                <div class="auth-options-row">
+                    <label class="auth-remember-label">
+                        <input type="checkbox" id="authRememberDevice" class="auth-remember-checkbox" checked />
+                        <span>Remember this device (30 days)</span>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="auth-btn-submit" id="btnAuthSubmit">
+                    <span id="authSubmitText">Sign In</span>
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </button>
+            </form>
+
+            <!-- Saved Accounts on this device -->
+            <div class="auth-saved-profiles" id="authSavedProfilesSection">
+                <div class="saved-profiles-heading">Saved Accounts on this Device:</div>
+                <div class="saved-profiles-pills" id="authSavedProfilesList">
+                    <!-- Dynamic profile chips -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. MAIN CALENDAR APPLICATION (Visible after login) -->
-    <div class="app-wrapper hidden" id="calendarApp">
-        <!-- Main Calendar Card Window -->
-        <main class="calendar-card" id="calendarCard">
-            
-            <!-- Left Side: Hero Poster & Atmosphere Panel -->
-            <aside class="hero-panel" id="heroPanel">
-                <div class="hero-scenic-frame">
-                    <div class="hero-scenic-overlay"></div>
-                    <div class="hero-arch-mask">
-                        <div class="hero-scenic-img"></div>
-                    </div>
-                </div>
+    <!-- =========================================================================
+         2. MAIN APPLICATION WORKSPACE (AUTHENTICATED)
+         ========================================================================= -->
+    <div class="app-workspace hidden" id="appWorkspace">
 
-                <div class="hero-content">
-                    <header class="hero-header">
-                        <div class="hero-top-row">
-                            <div class="hero-month-selector-group">
-                                <h1 class="hero-month-title" id="heroMonthTitle">SEPTEMBER</h1>
+        <!-- =====================================================================
+             DESKTOP SIDEBAR NAVIGATION RAIL
+             ===================================================================== -->
+        <aside class="app-sidebar" id="appSidebar">
+            <div class="sidebar-top">
+                <!-- Brand Header -->
+                <div class="sidebar-brand-row">
+                    <a href="#" class="sidebar-brand">
+                        <div class="sidebar-logo-box">
+                            <div class="logo-dot-matrix">
+                                <span class="logo-dot green"></span>
+                                <span class="logo-dot slate"></span>
+                                <span class="logo-dot slate"></span>
+                                <span class="logo-dot cyan"></span>
                             </div>
                         </div>
-
-                        <!-- Month Jump & Plans Bar in Hero -->
-                        <div class="hero-month-nav-row">
-                            <button class="hero-nav-arrow" id="btnHeroPrevMonth" title="Previous Month">‹</button>
-                            <button class="hero-month-jump-btn" id="btnOpenMonthPicker" title="Click to Jump Month / Year">
-                                <span id="heroMonthYearSubtitle">SEPTEMBER 2026</span>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </button>
-                            <button class="hero-nav-arrow" id="btnHeroNextMonth" title="Next Month">›</button>
-                        </div>
-                        
-                        <!-- Active User Pill & Logout Switcher -->
-                        <div class="active-user-chip" id="btnOpenUserModal" title="Click to Switch User / Sync Devices">
-                            <span class="user-chip-avatar">👤</span>
-                            <div class="user-chip-info">
-                                <span class="user-chip-name" id="displayUserName">User 1</span>
-                                <span class="user-chip-sync" id="syncStatusBadge">🟢 Sync Key: <span id="displaySyncKey">USER 1</span></span>
-                            </div>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </div>
-
-                        <div class="hero-year-vertical" id="heroYearVertical" aria-label="Year 2026">
-                            <span>2</span>
-                            <span>0</span>
-                            <span>2</span>
-                            <span>6</span>
-                        </div>
-                    </header>
-
-                    <!-- Monthly Stats Widget -->
-                    <div class="hero-stats-card">
-                        <div class="stats-progress-ring-container">
-                            <svg class="progress-ring" width="56" height="56" viewBox="0 0 56 56">
-                                <circle class="progress-ring-bg" cx="28" cy="28" r="22" stroke-width="4"></circle>
-                                <circle class="progress-ring-fill" id="monthProgressRing" cx="28" cy="28" r="22" stroke-width="4"></circle>
-                            </svg>
-                            <span class="progress-ring-text" id="monthProgressPercent">0%</span>
-                        </div>
-                        <div class="stats-info">
-                            <span class="stats-label" id="statsMonthLabel">MONTHLY PROGRESS</span>
-                            <span class="stats-value" id="monthTasksRatio">0/0 Tasks Completed</span>
-                        </div>
-                    </div>
-
-                    <!-- Quick Tools & Navigation Footer -->
-                    <div class="hero-footer-tools">
-                        <button class="tool-btn highlight" id="btnOpenPlansHero" title="Monthly Habit Plans & Blueprints">
-                            <span>📋 Plans</span>
-                        </button>
-                        <button class="tool-btn" id="btnToday" title="Jump to Today / 1st of Month">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            <span>1st Day</span>
-                        </button>
-                        <button class="tool-btn" id="btnSoundToggle" title="Toggle audio feedback">
-                            <span id="soundIconWrapper" style="display: inline-flex; align-items: center;">
-                                <svg class="sound-icon-on" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                                <svg class="sound-icon-off" style="display: none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
-                            </span>
-                            <span id="soundStatusText">Sound On</span>
-                        </button>
-                        <button class="tool-btn" id="btnInstallPwa" title="Install as App on Phone / PC">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                            <span>Install</span>
-                        </button>
-                    </div>
+                        <span class="sidebar-brand-name">Planner</span>
+                    </a>
+                    <span class="auth-version-badge">v2.4</span>
                 </div>
-            </aside>
 
-            <!-- Right Side: Calendar Grid, Observances & Daily Task Manager -->
-            <section class="main-panel" id="mainPanel">
-                
-                <!-- Top Navigation & Title Bar -->
-                <div class="calendar-top-bar">
-                    <div class="date-jump-navigator">
-                        <button class="nav-arrow-btn" id="btnPrevDay" title="Previous Day (Swipe Right / ← key)">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        </button>
-                        <div class="current-selected-badge" id="currentSelectedBadge">
-                            <span class="badge-num" id="badgeDayNum">01</span>
-                            <div class="badge-texts">
-                                <span class="badge-dayname" id="badgeDayName">TUESDAY</span>
-                                <span class="badge-monthyear" id="badgeMonthYear">SEP 2026</span>
-                            </div>
-                        </div>
-                        <button class="nav-arrow-btn" id="btnNextDay" title="Next Day (Swipe Left / → key)">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                        </button>
+                <!-- Search / Command Trigger -->
+                <button type="button" class="sidebar-search-btn" id="btnOpenCommandPalette">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined text-[16px]">search</span>
+                        <span>Command...</span>
+                    </span>
+                    <kbd class="search-shortcut-kbd">⌘K</kbd>
+                </button>
+
+                <!-- Navigation List -->
+                <nav>
+                    <ul class="sidebar-nav-list">
+                        <li>
+                            <a class="sidebar-nav-item active" id="navItemToday" data-view="today">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                <span>Today</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="sidebar-nav-item" id="navItemHabits" data-view="habits">
+                                <span class="material-symbols-outlined">repeat</span>
+                                <span>Habits & Blueprints</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="sidebar-nav-item" id="navItemMetrics" data-view="metrics">
+                                <span class="material-symbols-outlined">bar_chart</span>
+                                <span>Productivity & Observances</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="sidebar-nav-item" id="navItemVault" data-view="vault">
+                                <span class="material-symbols-outlined">lock</span>
+                                <span>Vault & Sync Keys</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Sidebar Bottom: Telemetry & Active Profile -->
+            <div class="sidebar-bottom">
+                <!-- Live Node Telemetry Widget -->
+                <div class="sidebar-telemetry-box">
+                    <div class="telemetry-row">
+                        <span class="telemetry-label">Node Connection</span>
+                        <span class="pulse-dot"></span>
                     </div>
-
-                    <div class="top-meta-actions">
-                        <!-- Monthly Plans Button -->
-                        <button class="action-pill-btn highlight" id="btnOpenPlansTop" title="Monthly Habit Plans & Blueprints">
-                            <span>📋 Monthly Plans</span>
-                        </button>
-
-                        <button class="action-pill-btn" id="btnOpenUserModalTop" title="Switch User or Link Phone">
-                            <span class="user-chip-avatar-sm">👤</span>
-                            <span id="topBarUserName">User 1</span>
-                        </button>
-
-                        <button class="action-pill-btn secondary" id="btnYesterdayPeek" title="Quickly check or review tasks entered yesterday">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                            <span>Yesterday</span>
-                        </button>
-                        
-                        <!-- Reset Menu Dropdown -->
-                        <div class="reset-dropdown-container">
-                            <button class="action-pill-btn secondary" id="btnResetMenu" title="Reset tasks options">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
-                                <span>Reset ▾</span>
-                            </button>
-                            <div class="reset-dropdown-menu hidden" id="resetDropdownMenu">
-                                <button class="reset-menu-item" id="btnResetToday">
-                                    <strong>🔄 Restore Today's Routine</strong>
-                                    <span>Reset <span id="resetDayLabel">Day 01</span> for <span class="reset-current-user">Current User</span></span>
-                                </button>
-                                <div class="reset-menu-divider"></div>
-                                <button class="reset-menu-item danger" id="btnResetAllMonth">
-                                    <strong>🗓️ Reset Entire Active Month</strong>
-                                    <span>Restore default tasks for this month</span>
-                                </button>
-                            </div>
-                        </div>
-
+                    <div class="telemetry-row">
+                        <span class="telemetry-label">Engine</span>
+                        <span class="telemetry-value synced" id="telemetryEngineStatus">SYNCED #04b</span>
+                    </div>
+                    <div class="telemetry-row">
+                        <span class="telemetry-label">Firebase</span>
+                        <span class="telemetry-value" id="telemetryFirebaseStatus">ONLINE</span>
                     </div>
                 </div>
 
-                <!-- Calendar Grid Section -->
-                <div class="calendar-grid-wrapper" id="calendarGridSection">
-                    <div class="calendar-weekdays-header">
-                        <span>S</span>
-                        <span>M</span>
-                        <span>T</span>
-                        <span>W</span>
-                        <span>T</span>
-                        <span>F</span>
-                        <span>S</span>
+                <!-- Active Profile Pill -->
+                <div class="sidebar-user-pill" id="sidebarUserPill">
+                    <div class="sidebar-user-info">
+                        <div class="user-avatar-circle" id="sidebarUserAvatar">U</div>
+                        <span class="user-avatar-name" id="sidebarUserName">User</span>
                     </div>
+                    <button type="button" class="btn-action-icon" id="btnSidebarLogout" title="Sign Out">
+                        <span class="material-symbols-outlined text-[18px]">logout</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
 
-                    <div class="calendar-days-grid" id="calendarDaysGrid" role="grid" aria-label="Calendar Days Grid">
-                        <!-- Dynamic calendar day cells injected by JS -->
-                    </div>
+        <!-- =====================================================================
+             TOP STATUS & ORCHESTRATION HEADER BAR
+             ===================================================================== -->
+        <header class="app-topbar" id="appTopbar">
+            <div class="topbar-left">
+                <span class="topbar-workspace">SYSTEM WORKSPACE</span>
+                <span class="topbar-divider">/</span>
+                <span class="topbar-node" id="topbarNodeCode">NORDIC_OS</span>
+            </div>
+
+            <div class="topbar-right">
+                <!-- Save Status Indicator -->
+                <div class="save-status-indicator" id="topbarSaveStatus">
+                    <span class="status-led" id="topbarLed"></span>
+                    <span id="topbarSaveText">LOCAL_SAVED</span>
                 </div>
 
-                <!-- Divider with Day Summary -->
-                <div class="section-divider">
-                    <div class="divider-line"></div>
-                    <span class="divider-text" id="dividerText">DAILY ROUTINE & DETAILS (TAP 💬 TO LOG ACTUALS)</span>
-                    <div class="divider-line"></div>
-                </div>
+                <!-- Audio Toggle -->
+                <button type="button" class="topbar-btn" id="btnToggleSound" title="Toggle Sound Feedback">
+                    <span class="material-symbols-outlined text-[16px]" id="topSoundIcon">volume_up</span>
+                    <span id="topSoundText">Audio</span>
+                </button>
 
-                <!-- Smart Notification / Rollover Banner -->
-                <div class="rollover-banner hidden" id="rolloverBanner">
-                    <div class="rollover-banner-content">
-                        <div class="banner-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 12 12 14 14"></polyline></svg>
-                        </div>
-                        <div class="banner-text">
-                            <strong id="rolloverTitle">Unfinished tasks from yesterday</strong>
-                            <p id="rolloverDesc">You have pending items. Would you like to carry them over to today?</p>
-                        </div>
-                    </div>
-                    <div class="rollover-actions">
-                        <button class="btn-banner-action primary" id="btnCarryOver">Carry Over to Today</button>
-                        <button class="btn-banner-action ghost" id="btnDismissRollover" title="Dismiss">Dismiss</button>
-                    </div>
-                </div>
+                <!-- Haptics Toggle -->
+                <button type="button" class="topbar-btn" id="btnToggleHaptics" title="Toggle Tactile Haptics">
+                    <span class="material-symbols-outlined text-[16px] text-secondary" id="topHapticsIcon">vibration</span>
+                    <span id="topHapticsText">Haptics</span>
+                </button>
 
-                <!-- Active Date Task Manager & Events Area -->
-                <div class="task-manager-container" id="taskManagerSection">
+                <!-- Month Selector Dropdown -->
+                <select id="monthSelectorSelect" class="category-select-mini" style="font-weight: 600;">
+                    <!-- Dynamically populated with 12 months -->
+                </select>
+
+                <!-- Install PWA Button -->
+                <button type="button" class="topbar-btn" id="btnTopInstallPWA" title="Install Web App">
+                    <span class="material-symbols-outlined text-[16px]">install_mobile</span>
+                    <span>Install</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- =====================================================================
+             MAIN CONTENT VIEWS
+             ===================================================================== -->
+        <main class="app-main-content">
+
+            <!-- =================================================================
+                 VIEW 1: TODAY • DAILY CHECKLIST & FOCUS MATRIX
+                 ================================================================= -->
+            <section class="view-container" id="viewToday">
+                <div class="dashboard-grid">
                     
-                    <!-- Observance / Awareness Event Banner for the Day -->
-                    <div class="observance-card" id="observanceCard">
-                        <div class="observance-tag">
-                            <span class="observance-dot"></span>
-                            <span id="observanceDateLabel">08.</span>
-                            <strong id="observanceTitle">WORLD OBSERVANCE DAY</strong>
-                        </div>
-                        <button class="btn-add-as-task" id="btnAddObservanceTask" title="Add this event to today's task checklist">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            <span>Add as Task</span>
-                        </button>
-                    </div>
-
-                    <!-- Task Input Form -->
-                    <form class="task-input-form" id="taskInputForm" onsubmit="return false;">
-                        <div class="input-group">
-                            <input 
-                                type="text" 
-                                class="task-text-input" 
-                                id="taskTextInput" 
-                                placeholder="Add a new custom task for today... (Enter)" 
-                                autocomplete="off"
-                                required 
-                            />
-                            <div class="input-controls">
-                                <select class="category-select" id="taskCategorySelect" title="Select Category/Priority">
-                                    <option value="Health">Health</option>
-                                    <option value="Personal">Personal</option>
-                                    <option value="Work">Work</option>
-                                    <option value="Urgent">🔥 Urgent</option>
-                                    <option value="General">General</option>
-                                </select>
-                                <button type="submit" class="btn-add-task" id="btnAddTask" title="Add Task">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                    <span>Add</span>
-                                </button>
+                    <!-- LEFT COLUMN (7 Cols) -->
+                    <div class="col-main">
+                        <!-- Today Header & Date Card -->
+                        <div class="surface-card today-header-card">
+                            <div class="today-top-meta">
+                                <div class="meta-badges">
+                                    <span class="badge-mono" id="todayWeekBadge">Week 37</span>
+                                    <span class="badge-mono secondary" id="todayObservanceBadge">
+                                        <span class="material-symbols-outlined text-[14px]">public</span>
+                                        <span id="todayObservanceText">World Literacy Day</span>
+                                    </span>
+                                </div>
+                                <div class="today-controls">
+                                    <button type="button" class="topbar-btn" id="btnJumpToToday">
+                                        <span class="material-symbols-outlined text-[16px]">today</span>
+                                        <span>Jump to Today</span>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </form>
 
-                    <!-- Filter Tabs, Daily Progress & Quick Restore Link -->
-                    <div class="task-list-header">
-                        <div class="task-filters">
-                            <button class="filter-tab active" data-filter="all">All (<span id="countAll">0</span>)</button>
-                            <button class="filter-tab" data-filter="active">Pending (<span id="countActive">0</span>)</button>
-                            <button class="filter-tab" data-filter="completed">Completed (<span id="countCompleted">0</span>)</button>
-                        </div>
-                        
-                        <div class="task-header-right">
-                            <button class="btn-quick-restore-today" id="btnQuickRestoreToday" title="Reset only today's tasks back to the active month's plan routine">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                                <span>Restore Defaults</span>
-                            </button>
-                            <div class="day-task-progress">
-                                <span id="dayProgressLabel">0% Done</span>
-                                <div class="day-progress-bar">
-                                    <div class="day-progress-fill" id="dayProgressFill" style="width: 0%;"></div>
+                            <div class="today-title-row">
+                                <div>
+                                    <h1 class="today-date-title" id="todayFormattedDate">Tuesday, Sep 08, 2026</h1>
+                                    <p class="today-date-sub" id="todaySubtext">Nordic Execution Matrix • Synchronized Enclave</p>
+                                </div>
+                                <div class="today-clock-ticker">
+                                    <span id="todayLiveTime">12:00 CET</span>
+                                    <span class="pulse-dot"></span>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Daily Task Items List -->
-                    <div class="task-items-list" id="taskItemsList" role="list">
-                        <!-- Dynamic task items injected by JS -->
-                    </div>
+                        <!-- Focus Matrix Progress Card -->
+                        <div class="surface-card">
+                            <div class="matrix-completion-header">
+                                <div class="matrix-title-group">
+                                    <div class="matrix-icon-badge">
+                                        <span class="material-symbols-outlined text-[20px]">radar</span>
+                                    </div>
+                                    <div>
+                                        <h2 class="matrix-title">Focus Matrix Completion</h2>
+                                        <span class="matrix-subtitle">High-leverage tasks & biological baselines</span>
+                                    </div>
+                                </div>
+                                <div class="matrix-score">
+                                    <span class="matrix-score-main" id="matrixScoreDone">0 <span class="matrix-score-total" id="matrixScoreTotal">/ 0</span></span>
+                                    <span class="matrix-score-target" id="matrixScorePercent">0% TARGET MET</span>
+                                </div>
+                            </div>
 
-                    <!-- Empty State -->
-                    <div class="empty-tasks-state hidden" id="emptyTasksState">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                        <p>All tasks cleared for this day.</p>
-                        <button class="btn-restore-in-empty" id="btnRestoreInEmpty">
-                            <span>🔄 Click here to Restore Default Daily Routine</span>
-                        </button>
-                    </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="matrixProgressBar" style="width: 0%;"></div>
+                            </div>
 
-                    <!-- All Observances Reference List -->
-                    <div class="observances-reference-list" id="observancesReferenceList">
-                        <div class="obs-ref-header">
-                            <span id="obsRefMonthHeader">SPECIAL DAYS & OBSERVANCES</span>
-                            <span class="obs-ref-hint">Tap any date to jump</span>
+                            <div class="matrix-metric-chips">
+                                <div class="matrix-chip">
+                                    <span class="matrix-chip-label">Deep Work</span>
+                                    <span class="matrix-chip-val" id="metricDeepWork">90m Target</span>
+                                </div>
+                                <div class="matrix-chip">
+                                    <span class="matrix-chip-label">Hydration</span>
+                                    <span class="matrix-chip-val" id="metricHydration">2.5L Baseline</span>
+                                </div>
+                                <div class="matrix-chip">
+                                    <span class="matrix-chip-label">Run Status</span>
+                                    <span class="matrix-chip-val" id="metricRunStatus">Zone 2 Active</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="obs-ref-items" id="obsRefItems">
-                            <!-- Injected by JS -->
+
+                        <!-- Interactive Calendar Day Selector Strip -->
+                        <div class="surface-card" style="padding: 14px;">
+                            <div class="calendar-strip-wrapper">
+                                <div class="calendar-strip" id="calendarDayStrip">
+                                    <!-- Dynamic 30/31 Day Cells Injected Here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rollover Banner -->
+                        <div class="rollover-banner hidden" id="rolloverBanner">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined text-[20px] text-secondary">update</span>
+                                <span style="font-size: 13px; font-weight: 500;" id="rolloverText">You have uncompleted tasks from yesterday.</span>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button type="button" class="topbar-btn" id="btnDismissRollover">Dismiss</button>
+                                <button type="button" class="auth-btn-submit" id="btnCarryOverYesterday" style="width: auto; height: 32px; padding: 0 12px; margin: 0; font-size: 12px;">
+                                    Carry Over Unique
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Priority Pipeline Checklist -->
+                        <div class="surface-card pipeline-card">
+                            <div class="pipeline-header">
+                                <div class="pipeline-title-left">
+                                    <span class="material-symbols-outlined text-[20px]">checklist</span>
+                                    <span>Priority Pipeline</span>
+                                    <span class="badge-mono" style="font-size: 10px;">Live Actuals</span>
+                                </div>
+                                <span class="badge-mono" style="font-size: 10px; color: var(--color-secondary);">AUTO-ROLL SAFE</span>
+                            </div>
+
+                            <!-- Tasks List Container -->
+                            <div class="pipeline-list" id="pipelineTaskList">
+                                <!-- Dynamic task rows -->
+                            </div>
+
+                            <!-- Rapid Inline Task Add Form -->
+                            <form class="pipeline-add-bar" id="pipelineAddForm" onsubmit="return false;">
+                                <span class="material-symbols-outlined text-on-surface-muted text-[18px]">add_task</span>
+                                <input 
+                                    type="text" 
+                                    id="pipelineTaskInput" 
+                                    class="pipeline-add-input" 
+                                    placeholder="Add rapid task to Pipeline (e.g., 'Verify staging TLS certificates')..." 
+                                    autocomplete="off"
+                                />
+                                <select id="pipelineCategorySelect" class="category-select-mini">
+                                    <option value="Work">EXEC_STRAT</option>
+                                    <option value="Health">BIO_01</option>
+                                    <option value="Personal">LINGUA</option>
+                                    <option value="General" selected>SYS_CORE</option>
+                                    <option value="Urgent">ACTION_REQ</option>
+                                </select>
+                                <button type="submit" class="auth-btn-submit" style="width: auto; height: 32px; padding: 0 12px; margin: 0; font-size: 12px;">
+                                    Add
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN (5 Cols) -->
+                    <div class="col-side">
+                        <!-- Duplicate-Protected Task Forwarding Hub -->
+                        <div class="surface-card forwarding-card">
+                            <div class="today-top-meta">
+                                <div class="meta-badges">
+                                    <span class="material-symbols-outlined text-[20px]">forward_to_inbox</span>
+                                    <h2 style="font-size: 16px; font-weight: 600;">Forwarding Hub</h2>
+                                </div>
+                                <span class="badge-mono secondary">DEDUP_V2</span>
+                            </div>
+                            <p style="font-size: 13px; color: var(--on-surface-variant);">
+                                Forward tasks to future dates with automated duplicate prevention and date-stamped notification trails.
+                            </p>
+
+                            <form class="forwarding-form" id="forwardTaskForm" onsubmit="return false;">
+                                <label style="font-size: 12px; font-weight: 600; color: var(--on-surface-muted);">SELECT TASK TO FORWARD:</label>
+                                <select id="forwardSelectTask" class="forward-select">
+                                    <option value="">-- Choose a task from today's list --</option>
+                                </select>
+
+                                <label style="font-size: 12px; font-weight: 600; color: var(--on-surface-muted);">TARGET DATE:</label>
+                                <select id="forwardSelectDay" class="forward-select">
+                                    <!-- Options generated dynamically -->
+                                </select>
+
+                                <button type="submit" class="forward-btn" id="btnSubmitForward">
+                                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                    <span>Forward Task (No Duplicates)</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Active Plans Summary & Quick Actions -->
+                        <div class="surface-card">
+                            <div class="today-top-meta">
+                                <div class="meta-badges">
+                                    <span class="material-symbols-outlined text-[20px]">tune</span>
+                                    <h3 style="font-size: 15px; font-weight: 600;">Monthly Habits Active</h3>
+                                </div>
+                                <button type="button" class="topbar-btn" id="btnManagePlansQuick">
+                                    <span>Manage Plans</span>
+                                </button>
+                            </div>
+                            <div id="activePlansSummaryList" style="display: flex; flex-direction: column; gap: 8px;">
+                                <!-- Dynamic active blueprint pills -->
+                            </div>
+                        </div>
+
+                        <!-- Observance Quick Add Card -->
+                        <div class="surface-card" id="todayObservanceCard">
+                            <div class="today-top-meta">
+                                <div class="meta-badges">
+                                    <span class="material-symbols-outlined text-[20px]">event</span>
+                                    <h3 style="font-size: 15px; font-weight: 600;">Today's Observance</h3>
+                                </div>
+                            </div>
+                            <p id="todayObservanceDetailText" style="font-size: 13px; font-weight: 500; color: var(--on-surface);">
+                                International Observance
+                            </p>
+                            <button type="button" class="topbar-btn" id="btnAddObservanceToToday" style="justify-content: center;">
+                                <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                                <span>Add Observance to Checklist</span>
+                            </button>
                         </div>
                     </div>
 
                 </div>
             </section>
-        </main>
 
-        <!-- ============================================================
-             3. MONTH & YEAR QUICK JUMP PICKER MODAL
-             ============================================================ -->
-        <div class="picker-modal-backdrop hidden" id="monthPickerBackdrop">
-            <div class="picker-modal" id="monthPickerModal">
-                <div class="picker-modal-header">
-                    <h3>🗓️ Jump to Month & Year</h3>
-                    <button class="btn-close-drawer" id="btnCloseMonthPicker" title="Close">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
-                <div class="picker-modal-body">
-                    <div class="year-stepper-row">
-                        <button class="btn-year-step" id="btnYearStepPrev">‹</button>
-                        <strong class="year-display" id="pickerYearDisplay">2026</strong>
-                        <button class="btn-year-step" id="btnYearStepNext">›</button>
-                    </div>
-                    <div class="months-grid" id="pickerMonthsGrid">
-                        <!-- 12 months buttons injected by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================================
-             4. MONTHLY PLANS & BLUEPRINTS MANAGER MODAL
-             ============================================================ -->
-        <div class="plans-modal-backdrop hidden" id="plansModalBackdrop">
-            <div class="plans-modal" id="plansModal">
-                <div class="plans-modal-header">
-                    <div class="modal-header-title">
-                        <span class="modal-header-icon">📋</span>
+            <!-- =================================================================
+                 VIEW 2: HABITS • BLUEPRINTS & RECURRENCE ENGINE
+                 ================================================================= -->
+            <section class="view-container hidden" id="viewHabits">
+                <div class="surface-card">
+                    <div class="today-top-meta">
                         <div>
-                            <h3>Monthly Habit Plans & Blueprints</h3>
-                            <p class="plans-modal-subtitle">Combine multiple plans to set your default routine for <strong id="plansTargetMonthLabel">September 2026</strong></p>
+                            <div class="meta-badges" style="margin-bottom: 4px;">
+                                <span class="badge-mono secondary">RECURRENCE KERNEL</span>
+                                <span class="badge-mono">SCHEDULER ENGINE v4.2</span>
+                            </div>
+                            <h1 style="font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Habit Blueprints & Recurrence Engine</h1>
+                            <p style="font-size: 13px; color: var(--on-surface-variant);">
+                                Configure deterministic recurrence schedules, weekly day matrices, and custom monthly habit blueprints.
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="topbar-btn" id="btnCreateNewPlan">
+                                <span class="material-symbols-outlined text-[16px]">add</span>
+                                <span>Create Custom Plan</span>
+                            </button>
+                            <button type="button" class="topbar-btn" id="btnImportPlanOpen">
+                                <span class="material-symbols-outlined text-[16px]">download</span>
+                                <span>Import Code</span>
+                            </button>
+                            <button type="button" class="topbar-btn" id="btnSetBlankCanvas">
+                                <span class="material-symbols-outlined text-[16px]">crop_square</span>
+                                <span>Blank Canvas</span>
+                            </button>
                         </div>
                     </div>
-                    <button class="btn-close-drawer" id="btnClosePlansModal" title="Close">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
+
+                    <!-- Cadence Engine Scope Tabs -->
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+                        <label style="font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--on-surface-muted);">
+                            Cadence Engine Scope
+                        </label>
+                        <div class="cadence-scope-tabs" id="cadenceScopeTabs">
+                            <button type="button" class="cadence-tab-btn active" data-cadence="all">All Cadences</button>
+                            <button type="button" class="cadence-tab-btn" data-cadence="daily">Daily</button>
+                            <button type="button" class="cadence-tab-btn" data-cadence="weekdays">Weekdays</button>
+                            <button type="button" class="cadence-tab-btn" data-cadence="weekends">Weekends</button>
+                            <button type="button" class="cadence-tab-btn" data-cadence="mwf">Mon / Wed / Fri</button>
+                            <button type="button" class="cadence-tab-btn" data-cadence="tts">Tue / Thu / Sat</button>
+                            <button type="button" class="cadence-tab-btn" data-cadence="custom">Custom Skip Days</button>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Recurrence Matrix -->
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
+                        <label style="font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--on-surface-muted);">
+                            Weekly Recurrence Matrix (Active Days Filter)
+                        </label>
+                        <div class="weekly-recurrence-grid" id="weeklyDayGrid">
+                            <button type="button" class="weekday-toggle-btn active" data-day="1"><span class="badge-mono" style="font-size: 9px;">01</span><span class="day-code">M</span><span class="dot"></span></button>
+                            <button type="button" class="weekday-toggle-btn active" data-day="2"><span class="badge-mono" style="font-size: 9px;">02</span><span class="day-code">T</span><span class="dot"></span></button>
+                            <button type="button" class="weekday-toggle-btn active" data-day="3"><span class="badge-mono" style="font-size: 9px;">03</span><span class="day-code">W</span><span class="dot"></span></button>
+                            <button type="button" class="weekday-toggle-btn active" data-day="4"><span class="badge-mono" style="font-size: 9px;">04</span><span class="day-code">Th</span><span class="dot"></span></button>
+                            <button type="button" class="weekday-toggle-btn active" data-day="5"><span class="badge-mono" style="font-size: 9px;">05</span><span class="day-code">F</span><span class="dot"></span></button>
+                            <button type="button" class="weekday-toggle-btn active" data-day="6"><span class="badge-mono" style="font-size: 9px;">06</span><span class="day-code">Sa</span><span class="dot"></span></button>
+                            <button type="button" class="weekday-toggle-btn active" data-day="0"><span class="badge-mono" style="font-size: 9px;">07</span><span class="day-code">Su</span><span class="dot"></span></button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="plans-modal-body">
-                    <!-- Top Action Bar -->
-                    <div class="plans-top-actions">
-                        <button class="btn-plans-action primary" id="btnOpenCreatePlan">
-                            <span>➕ Create New Plan</span>
-                        </button>
-                        <button class="btn-plans-action secondary" id="btnOpenImportPlan">
-                            <span>📥 Import Shared Plan</span>
-                        </button>
+                <!-- Blueprints Library (Default + Custom Plans) -->
+                <div class="surface-card">
+                    <div class="today-top-meta">
+                        <div class="meta-badges">
+                            <span class="material-symbols-outlined text-[20px]">collections_bookmark</span>
+                            <h2 style="font-size: 18px; font-weight: 600;">Plan Library & Blueprint Presets</h2>
+                        </div>
+                        <span class="badge-mono" id="blueprintsCountBadge">3 Blueprints</span>
                     </div>
 
-                    <!-- Available Plans List -->
-                    <div class="plans-list-container">
-                        <span class="plans-list-title">SELECT PLANS TO COMBINE FOR THIS MONTH:</span>
-                        <div class="plans-list-grid" id="plansListGrid">
-                            <!-- Injected plan cards -->
-                        </div>
-                    </div>
-
-                    <!-- Multi-Plan Merged Summary -->
-                    <div class="plans-combine-bar" id="plansCombineBar">
-                        <div class="combine-info">
-                            <span class="combine-badge" id="combineBadge">1 Plan Active</span>
-                            <p id="combineTasksCount">Contains 7 default daily tasks</p>
-                        </div>
-                        <button class="btn-apply-plans" id="btnApplyPlansToMonth">
-                            <span>🚀 Apply to Active Month</span>
-                        </button>
+                    <div class="blueprints-grid" id="blueprintsLibraryGrid">
+                        <!-- Dynamic Blueprint Cards -->
                     </div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- ============================================================
-             5. CREATE / EDIT CUSTOM PLAN MODAL
-             ============================================================ -->
-        <div class="create-plan-backdrop hidden" id="createPlanBackdrop">
-            <div class="create-plan-modal" id="createPlanModal">
-                <div class="create-plan-header">
-                    <h3 id="createPlanModalTitle">✨ Create New Monthly Plan</h3>
-                    <button class="btn-close-drawer" id="btnCloseCreatePlan" title="Close">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
+            <!-- =================================================================
+                 VIEW 3: PRODUCTIVITY & OBSERVANCES TELEMETRY
+                 ================================================================= -->
+            <section class="view-container hidden" id="viewMetrics">
+                <!-- Top Command & Perspective Header -->
+                <div class="surface-card">
+                    <div class="today-top-meta">
+                        <div>
+                            <div class="meta-badges" style="margin-bottom: 4px;">
+                                <span class="badge-mono">ANALYTICS ENGINE</span>
+                                <span class="badge-mono secondary">TELEMETRY v2.4</span>
+                            </div>
+                            <h1 style="font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Productivity & Observances</h1>
+                            <p style="font-size: 13px; color: var(--on-surface-variant);">
+                                Multi-dimensional completion telemetry, cyclic cadence heatmaps, and formal international observances.
+                            </p>
+                        </div>
+                        <button type="button" class="auth-btn-submit" id="btnRecomputeTelemetry" style="width: auto; height: 36px; padding: 0 16px; margin: 0;">
+                            <span class="material-symbols-outlined text-[16px]">sync</span>
+                            <span>Recompute</span>
+                        </button>
+                    </div>
+
+                    <!-- 4 Top Metrics Cards Strip -->
+                    <div class="metrics-strip">
+                        <div class="metric-card">
+                            <div class="metric-card-header">
+                                <span>Velocity Index</span>
+                                <span class="material-symbols-outlined text-[16px] text-secondary">trending_up</span>
+                            </div>
+                            <div class="metric-card-val" id="metricVelocityVal">92%</div>
+                            <div class="progress-track" style="height: 4px;"><div class="progress-fill" id="metricVelocityBar" style="width: 92%;"></div></div>
+                            <span style="font-size: 11px; color: var(--on-surface-muted);">Nominal threshold: 85%</span>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-card-header">
+                                <span>Current Cadence</span>
+                                <span class="material-symbols-outlined text-[16px]">local_fire_department</span>
+                            </div>
+                            <div class="metric-card-val" id="metricStreakVal">24<span style="font-size: 16px; font-weight: 400; color: var(--on-surface-muted);">d</span></div>
+                            <div class="progress-track" style="height: 4px;"><div class="progress-fill" style="width: 80%; background: var(--color-primary);"></div></div>
+                            <span style="font-size: 11px; color: var(--on-surface-muted);">Next milestone: 30d</span>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-card-header">
+                                <span>Actuals Yield</span>
+                                <span class="material-symbols-outlined text-[16px] text-secondary">fact_check</span>
+                            </div>
+                            <div class="metric-card-val" id="metricActualsYieldVal">92.2%</div>
+                            <div class="progress-track" style="height: 4px;"><div class="progress-fill" id="metricActualsYieldBar" style="width: 92.2%;"></div></div>
+                            <span style="font-size: 11px; color: var(--on-surface-muted);" id="metricActualsYieldSub">Precision logged</span>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-card-header">
+                                <span>Average Daily Focus</span>
+                                <span class="material-symbols-outlined text-[16px]">timer</span>
+                            </div>
+                            <div class="metric-card-val" id="metricAvgFocusVal">4.2<span style="font-size: 16px; font-weight: 400; color: var(--on-surface-muted);">hrs</span></div>
+                            <div class="progress-track" style="height: 4px;"><div class="progress-fill" style="width: 84%; background: var(--color-primary);"></div></div>
+                            <span style="font-size: 11px; color: var(--on-surface-muted);">Goal: 4.0h daily</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="create-plan-body">
-                    <form class="plan-form" id="planForm" onsubmit="return false;">
-                        <div class="form-group">
-                            <label class="form-label" for="planNameInput">PLAN NAME</label>
-                            <input type="text" id="planNameInput" class="form-input" placeholder="e.g. Marathon Training, Student Focus, Morning Zen" required />
-                        </div>
 
-                        <div class="form-group">
-                            <label class="form-label" for="planDescInput">DESCRIPTION / GOAL (OPTIONAL)</label>
-                            <input type="text" id="planDescInput" class="form-input" placeholder="e.g. 30-day challenge focusing on physical and mental energy" />
-                        </div>
+                <div class="dashboard-grid">
+                    <!-- Left Column: 30-Day Activity Matrix Heatmap -->
+                    <div class="col-main">
+                        <div class="surface-card heatmap-card">
+                            <div class="today-top-meta">
+                                <div>
+                                    <div class="meta-badges">
+                                        <span class="pulse-dot"></span>
+                                        <h2 style="font-size: 16px; font-weight: 600;">30-Day Multi-Vector Matrix</h2>
+                                    </div>
+                                    <p style="font-size: 12px; color: var(--on-surface-variant);">
+                                        Sequential habit resolution across operational work dimensions.
+                                    </p>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 10px; color: var(--on-surface-muted);">
+                                    <span>Less</span>
+                                    <span class="heatmap-cell" style="width: 10px; height: 12px;"></span>
+                                    <span class="heatmap-cell level-1" style="width: 10px; height: 12px;"></span>
+                                    <span class="heatmap-cell level-2" style="width: 10px; height: 12px;"></span>
+                                    <span class="heatmap-cell level-3" style="width: 10px; height: 12px;"></span>
+                                    <span>More</span>
+                                </div>
+                            </div>
 
-                        <div class="form-group">
-                            <label class="form-label">PRIVACY & SHARING</label>
-                            <div class="privacy-toggle-row">
-                                <label class="privacy-option">
-                                    <input type="radio" name="planPrivacy" value="personal" checked />
-                                    <span>🔒 Personal (Only for my user)</span>
-                                </label>
-                                <label class="privacy-option">
-                                    <input type="radio" name="planPrivacy" value="shared" />
-                                    <span>🌐 Shared (Available to all users)</span>
-                                </label>
+                            <table class="heatmap-table" id="heatmapMatrixTable">
+                                <!-- Generated Dynamically -->
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Observances Ledger -->
+                    <div class="col-side">
+                        <div class="surface-card">
+                            <div class="today-top-meta">
+                                <div class="meta-badges">
+                                    <span class="material-symbols-outlined text-[20px]">public</span>
+                                    <h2 style="font-size: 16px; font-weight: 600;">Monthly Observances</h2>
+                                </div>
+                                <span class="badge-mono" id="observancesMonthBadge">Sep 2026</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--on-surface-variant);">
+                                UN & Global Observances for this month. 1-click add to today's execution checklist.
+                            </p>
+
+                            <div class="observances-list" id="observancesLedgerList">
+                                <!-- Dynamic observance rows -->
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
 
-                        <div class="form-group">
-                            <div class="task-builder-header">
-                                <label class="form-label">PLAN TASKS & RECURRENCE</label>
-                                <button type="button" class="btn-add-builder-row" id="btnAddPlanTaskRow">
-                                    <span>➕ Add Task</span>
+            <!-- =================================================================
+                 VIEW 4: SYNC KEYS & STORAGE VAULT
+                 ================================================================= -->
+            <section class="view-container hidden" id="viewVault">
+                <!-- Top Orchestration Bar -->
+                <div class="surface-card">
+                    <div class="today-top-meta">
+                        <div>
+                            <div class="meta-badges" style="margin-bottom: 4px;">
+                                <span class="badge-mono">VAULT INFRASTRUCTURE</span>
+                                <span class="badge-mono secondary">ZERO-KNOWLEDGE ENCLAVE</span>
+                            </div>
+                            <h1 style="font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Sync Keys & Storage Vault</h1>
+                            <p style="font-size: 13px; color: var(--on-surface-variant);">
+                                Hardware-backed client-side keys orchestrate multi-device ledger replication with Firebase Realtime Database.
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="topbar-btn" id="btnForceSyncVault">
+                                <span class="material-symbols-outlined text-[16px]">sync</span>
+                                <span>Re-verify Ring</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Cloud Sync Header Card -->
+                    <div class="surface-card" style="background: var(--surface-low); box-shadow: none;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--surface-lowest); display: flex; align-items: center; justify-content: center;">
+                                    <span class="material-symbols-outlined text-secondary text-[24px]">cloud_sync</span>
+                                </div>
+                                <div>
+                                    <div style="font-size: 14px; font-weight: 600;">Firebase Realtime Sync</div>
+                                    <span class="badge-mono secondary" style="font-size: 10px;">ACTIVE // ENCLAVE</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="telemetry-label">Latency:</span>
+                                <strong style="font-family: var(--font-mono); color: var(--color-secondary);"> 24 ms</strong>
+                            </div>
+                            <div>
+                                <span class="telemetry-label">Handshake:</span>
+                                <strong style="font-family: var(--font-mono);"> TLS 1.3</strong>
+                            </div>
+                            <div>
+                                <span class="telemetry-label">Session Token:</span>
+                                <strong style="font-family: var(--font-mono); color: var(--on-surface);" id="vaultSessionToken">#04b-verified</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Left Column: Symmetric Key & QR Code -->
+                    <div class="col-main">
+                        <div class="surface-card">
+                            <div class="today-top-meta">
+                                <div class="meta-badges">
+                                    <span class="material-symbols-outlined text-[20px]">vpn_key</span>
+                                    <h2 style="font-size: 16px; font-weight: 600;">Client Symmetric Key</h2>
+                                </div>
+                                <span class="badge-mono">SHA-256 ENCRYPTED</span>
+                            </div>
+                            <p style="font-size: 13px; color: var(--on-surface-variant);">
+                                Your personal synchronization key. Encrypted locally and synchronized via Firebase.
+                            </p>
+
+                            <div class="vault-key-display-box">
+                                <code class="key-code-mono" id="vaultKeyText">pk_live_••••••••••••••••</code>
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" class="btn-action-icon" id="btnRevealVaultKey" title="Reveal Key">
+                                        <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                    </button>
+                                    <button type="button" class="btn-action-icon" id="btnCopyVaultKey" title="Copy Key">
+                                        <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="topbar-btn" id="btnToggleQRView" style="flex: 1; justify-content: center; height: 38px;">
+                                    <span class="material-symbols-outlined text-[18px]">qr_code_2</span>
+                                    <span>Link via QR</span>
                                 </button>
                             </div>
-                            <div class="task-builder-list" id="taskBuilderList">
-                                <!-- Dynamic task rows injected by JS -->
+
+                            <!-- QR Code Drawer -->
+                            <div class="hidden" id="qrDrawer" style="padding: 16px; background: var(--surface-low); border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                <div style="background: white; padding: 12px; border-radius: var(--radius-md); box-shadow: var(--shadow-subtle);">
+                                    <svg class="w-32 h-32" width="128" height="128" viewBox="0 0 100 100" fill="currentColor">
+                                        <rect x="5" y="5" width="28" height="28" rx="2"></rect>
+                                        <rect x="10" y="10" width="18" height="18" fill="#ffffff"></rect>
+                                        <rect x="14" y="14" width="10" height="10"></rect>
+                                        <rect x="67" y="5" width="28" height="28" rx="2"></rect>
+                                        <rect x="72" y="10" width="18" height="18" fill="#ffffff"></rect>
+                                        <rect x="76" y="14" width="10" height="10"></rect>
+                                        <rect x="5" y="67" width="28" height="28" rx="2"></rect>
+                                        <rect x="10" y="72" width="18" height="18" fill="#ffffff"></rect>
+                                        <rect x="14" y="76" width="10" height="10"></rect>
+                                        <rect x="40" y="10" width="6" height="6"></rect>
+                                        <rect x="52" y="14" width="6" height="6"></rect>
+                                        <rect x="40" y="40" width="8" height="8"></rect>
+                                        <rect x="68" y="40" width="8" height="8"></rect>
+                                        <rect x="42" y="66" width="6" height="6"></rect>
+                                    </svg>
+                                </div>
+                                <span style="font-size: 11px; color: var(--on-surface-muted); text-align: center;">
+                                    Scan from another device to replicate this user profile.
+                                </span>
                             </div>
                         </div>
-                    </form>
-                </div>
-                <div class="create-plan-footer">
-                    <button class="btn-modal-action secondary" id="btnCancelCreatePlan">Cancel</button>
-                    <button class="btn-modal-action primary" id="btnSaveNewPlan">Save Plan Blueprint</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================================
-             6. IMPORT SHARED PLAN MODAL
-             ============================================================ -->
-        <div class="import-modal-backdrop hidden" id="importPlanBackdrop">
-            <div class="import-modal" id="importPlanModal">
-                <div class="import-modal-header">
-                    <h3>📥 Import Shared Plan</h3>
-                    <button class="btn-close-drawer" id="btnCloseImportPlan" title="Close">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
-                <div class="import-modal-body">
-                    <p class="import-desc">Paste a Plan Share Code sent to you by another user:</p>
-                    <textarea id="importPlanCodeInput" class="import-textarea" placeholder="Paste Plan Code here..." rows="4"></textarea>
-                </div>
-                <div class="import-modal-footer">
-                    <button class="btn-modal-action secondary" id="btnCancelImport">Cancel</button>
-                    <button class="btn-modal-action primary" id="btnSubmitImport">Import & Add to Library</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================================
-             7. TASK NOTE / ACTUAL DETAILS MODAL
-             ============================================================ -->
-        <div class="note-modal-backdrop hidden" id="noteModalBackdrop">
-            <div class="note-modal" id="noteModal">
-                <div class="note-modal-header">
-                    <div class="modal-header-title">
-                        <span class="modal-header-icon">📝</span>
-                        <h3>Log Actuals & Task Details</h3>
-                    </div>
-                    <button class="btn-close-drawer" id="btnCloseNoteModal" title="Close">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
-                <div class="note-modal-body">
-                    <div class="note-task-preview">
-                        <span class="note-task-label">Task:</span>
-                        <strong class="note-task-name" id="noteTaskName">Wake up by 8 AM</strong>
-                    </div>
-                    <div class="note-input-group">
-                        <label for="taskNoteInput" class="note-field-label">Actual Result / Detail Note:</label>
-                        <textarea 
-                            id="taskNoteInput" 
-                            class="note-textarea" 
-                            placeholder="e.g. Woke up at 8:30 AM, or Drank 2.5 litres, or 6,500 steps taken..."
-                            rows="3"
-                        ></textarea>
-                    </div>
-                    <div class="note-quick-presets" id="noteQuickPresets">
-                        <!-- Smart preset suggestion chips injected dynamically -->
-                    </div>
-                </div>
-                <div class="note-modal-footer">
-                    <button class="btn-modal-action secondary" id="btnClearNote">Remove Note</button>
-                    <button class="btn-modal-action primary" id="btnSaveNote">Save Detail</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================================
-             8. MULTI-USER & DEVICE SYNC MODAL
-             ============================================================ -->
-        <div class="user-modal-backdrop hidden" id="userModalBackdrop">
-            <div class="user-modal" id="userModal">
-                <div class="user-modal-header">
-                    <div class="modal-header-title">
-                        <span class="modal-header-icon">👥</span>
-                        <h3>User Account & Device Sync</h3>
-                    </div>
-                    <button class="btn-close-drawer" id="btnCloseUserModal" title="Close">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
-
-                <div class="user-modal-body">
-                    <div class="sync-info-box">
-                        <h4>📱 Sync Phone & PC in Real-Time</h4>
-                        <p>Use the same <strong>Sync Key</strong> on both your phone and PC so your tasks stay updated everywhere automatically.</p>
-                        <div class="sync-key-display-box">
-                            <span class="sync-key-label">Your Sync Key:</span>
-                            <strong class="sync-key-code" id="currentSyncKeyCode">USER 1</strong>
-                            <button class="btn-copy-key" id="btnCopySyncKey" title="Copy Key">Copy</button>
-                        </div>
                     </div>
 
-                    <!-- Switch or Join User Account -->
-                    <div class="user-section">
-                        <h4>👤 Switch User Profile / Enter Sync Key</h4>
-                        <p class="user-section-sub">Each user or key has completely independent tasks, plans, and calendar records.</p>
-                        
-                        <form class="user-switch-form" id="userSwitchForm" onsubmit="return false;">
-                            <div class="input-user-row">
-                                <input 
-                                    type="text" 
-                                    id="inputUserKey" 
-                                    placeholder="Enter Sync Key (e.g. Alex, Home, Work)" 
-                                    autocomplete="off"
-                                    required 
-                                />
-                                <button type="submit" class="btn-switch-user" id="btnSwitchUser">Switch / Connect</button>
+                    <!-- Right Column: Connected Device Ring & Account Actions -->
+                    <div class="col-side">
+                        <div class="surface-card">
+                            <div class="today-top-meta">
+                                <div class="meta-badges">
+                                    <span class="material-symbols-outlined text-[20px]">hub</span>
+                                    <h2 style="font-size: 16px; font-weight: 600;">Synchronized Device Ring</h2>
+                                </div>
+                                <span class="badge-mono secondary">PEER VERIFIED</span>
                             </div>
-                        </form>
 
-                        <div class="quick-profiles-list">
-                            <span class="quick-profiles-title">Saved Profiles on this Device:</span>
-                            <div class="profiles-pills-row" id="profilesPillsRow">
-                                <!-- Dynamic profile pills injected by JS -->
+                            <div class="device-ring-list">
+                                <div class="device-node-card">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span class="material-symbols-outlined text-[20px]">smartphone</span>
+                                        <div>
+                                            <div style="font-size: 13px; font-weight: 600;">Primary Mobile Client</div>
+                                            <span style="font-size: 11px; color: var(--color-secondary);">Active Session • Realtime</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge-mono">NODE_01</span>
+                                </div>
+                                <div class="device-node-card">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span class="material-symbols-outlined text-[20px]">laptop</span>
+                                        <div>
+                                            <div style="font-size: 13px; font-weight: 600;">Desktop Workstation</div>
+                                            <span style="font-size: 11px; color: var(--color-secondary);">Synced • Standby</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge-mono">NODE_02</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Management & Security -->
+                        <div class="surface-card">
+                            <h3 style="font-size: 15px; font-weight: 600;">Account Actions</h3>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <button type="button" class="topbar-btn" id="btnSwitchAccountVault" style="justify-content: center; height: 38px;">
+                                    <span class="material-symbols-outlined text-[18px]">switch_account</span>
+                                    <span>Switch Account / Sign In as Other</span>
+                                </button>
+                                <button type="button" class="topbar-btn" id="btnDeleteAccountVault" style="justify-content: center; height: 38px; color: var(--color-error);">
+                                    <span class="material-symbols-outlined text-[18px]">delete_forever</span>
+                                    <span>Delete Account (Archive to Vault)</span>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="user-modal-footer" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                    <button class="btn-modal-action danger" id="btnDeleteUserProfile" style="background: rgba(231, 111, 81, 0.15); border-color: #e76f51; color: #e76f51; font-weight: 700;">
-                        <span>🗑️ Delete Account</span>
-                    </button>
-                    <div style="display: flex; gap: 6px;">
-                        <button class="btn-modal-action secondary" id="btnLogoutUser">
-                            <span>🚪 Switch / Log Out</span>
-                        </button>
-                        <button class="btn-modal-action primary" id="btnCreateNewProfile">
-                            <span>➕ New Profile</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </main>
 
-        <!-- ============================================================
-             9. YESTERDAY'S QUICK REVIEW DRAWER
-             ============================================================ -->
-        <div class="yesterday-drawer-backdrop hidden" id="yesterdayDrawerBackdrop">
-            <div class="yesterday-drawer" id="yesterdayDrawer">
-                <div class="drawer-header">
-                    <div class="drawer-title-group">
-                        <span class="drawer-badge" id="yesterdayDateBadge">DAY 01</span>
-                        <h3>Yesterday's Task Checklist</h3>
-                    </div>
-                    <button class="btn-close-drawer" id="btnCloseYesterdayDrawer" title="Close">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
-                <div class="drawer-content">
-                    <p class="drawer-subtitle">You can check or uncheck tasks from yesterday directly here, or carry over any unfinished items to today.</p>
-                    <div class="drawer-task-list" id="yesterdayTaskList">
-                        <!-- Injected yesterday tasks -->
-                    </div>
-                    <div class="drawer-actions">
-                        <button class="btn-drawer-action primary" id="btnDrawerCarryAll">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            <span>Copy Incomplete Tasks to Today</span>
-                        </button>
-                        <button class="btn-drawer-action secondary" id="btnDrawerJumpYesterday">
-                            <span>Jump to this Date</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- =====================================================================
+             MOBILE BOTTOM NAVIGATION BAR
+             ===================================================================== -->
+        <nav class="app-mobile-nav" id="appMobileNav">
+            <a class="mobile-nav-tab active" data-view="today" id="mobTabToday">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Today</span>
+            </a>
+            <a class="mobile-nav-tab" data-view="habits" id="mobTabHabits">
+                <span class="material-symbols-outlined">repeat</span>
+                <span>Habits</span>
+            </a>
+            <a class="mobile-nav-tab" data-view="metrics" id="mobTabMetrics">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <span>Metrics</span>
+            </a>
+            <a class="mobile-nav-tab" data-view="vault" id="mobTabVault">
+                <span class="material-symbols-outlined">lock</span>
+                <span>Vault</span>
+            </a>
+        </nav>
 
     </div>
 
-    <!-- 10. DISCREET SYSTEM AUTHENTICATION MODAL -->
-    <div id="sysAuthBackdrop" style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(10, 16, 20, 0.88); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 16px;">
-        <div style="background: linear-gradient(145deg, #1f2b33 0%, #151e24 100%); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: var(--radius-lg); box-shadow: var(--shadow-deep); width: 100%; max-width: 380px; overflow: hidden; animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);">
-            <div style="background: #11181c; color: #ffffff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <h3 style="font-family: var(--font-heading); font-size: 0.88rem; font-weight: 800; letter-spacing: 0.08em; display: flex; align-items: center; gap: 8px;">
-                    <span>🛡️</span> SYSTEM SECURITY GATE
-                </h3>
-                <button type="button" class="btn-close-drawer" onclick="closeSysAuthModal()" style="font-size: 1.1rem; color: rgba(255,255,255,0.7); cursor: pointer;">✕</button>
+    <!-- =========================================================================
+         3. DISCREET MASTER CONSOLE (SECURED UNDER ?ThinkMarster=C6)
+         ========================================================================= -->
+    <div class="master-console-overlay hidden" id="masterConsoleOverlay">
+        <div class="master-top-bar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="material-symbols-outlined text-secondary text-[24px]">shield</span>
+                <div>
+                    <h2 style="font-size: 18px; font-weight: 700; color: white;">Master Intelligence Console</h2>
+                    <span style="font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.6);">SECURE ROOT ARCHIVE</span>
+                </div>
             </div>
-            <div style="padding: 22px; display: flex; flex-direction: column; gap: 14px;">
-                <form id="sysAuthForm" onsubmit="handleSysAuthSubmit(); return false;" style="display: flex; flex-direction: column; gap: 12px;">
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.68rem; color: rgba(255,255,255,0.7);">AUTHORIZATION ID</label>
-                        <input type="text" id="sysAuthUser" class="form-input" autocomplete="off" placeholder="Enter ID..." style="background: #25333c; border-color: rgba(255,255,255,0.15); color: #fff;" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.68rem; color: rgba(255,255,255,0.7);">SECURITY KEY</label>
-                        <input type="password" id="sysAuthPass" class="form-input" autocomplete="off" placeholder="••••••••••••" style="background: #25333c; border-color: rgba(255,255,255,0.15); color: #fff;" required>
-                    </div>
-                    <div id="sysAuthError" style="color: #ff7654; font-size: 0.76rem; font-weight: 700; display: none;">Invalid credentials. Access denied.</div>
-                    <button type="submit" class="btn-modal-action primary" style="width: 100%; padding: 11px; margin-top: 4px; font-weight: 800; font-size: 0.84rem; cursor: pointer;">
-                        AUTHENTICATE & ENTER
-                    </button>
-                </form>
+            <button type="button" class="topbar-btn" id="btnCloseMasterConsole" style="background: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.2);">
+                <span>✕ Close Console</span>
+            </button>
+        </div>
+
+        <div class="master-metrics-grid">
+            <div class="metric-card" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white;">
+                <span class="metric-card-header" style="color: rgba(255,255,255,0.6);">TOTAL REGISTERED USERS</span>
+                <div class="metric-card-val" style="color: white;" id="masterMetricTotalUsers">0</div>
+            </div>
+            <div class="metric-card" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white;">
+                <span class="metric-card-header" style="color: rgba(255,255,255,0.6);">TOTAL TASKS CREATED</span>
+                <div class="metric-card-val" style="color: #38bdf8;" id="masterMetricTotalTasks">0</div>
+            </div>
+            <div class="metric-card" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white;">
+                <span class="metric-card-header" style="color: rgba(255,255,255,0.6);">COMPLETED TASKS</span>
+                <div class="metric-card-val" style="color: #10b981;" id="masterMetricCompletedTasks">0</div>
+            </div>
+            <div class="metric-card" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white;">
+                <span class="metric-card-header" style="color: rgba(255,255,255,0.6);">AVG COMPLETION RATE</span>
+                <div class="metric-card-val" style="color: #f59e0b;" id="masterMetricAvgRate">0%</div>
             </div>
         </div>
-    </div>
 
-    <!-- 11. DISCREET MASTER USER CONSOLE SCREEN -->
-    <div id="masterConsoleScreen" style="display: none; position: fixed; inset: 0; z-index: 1200; overflow-y: auto; padding: 20px 12px; background: radial-gradient(circle at 10% 20%, #1e2830 0%, #11181c 100%);">
-        <div class="welcome-card" style="max-width: 1100px; width: 100%; min-height: 80vh; background: #182329; color: #ffffff; border: 1px solid rgba(255,255,255,0.18);">
-            <!-- Master Console Header -->
-            <div style="background: #10171b; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.12); flex-wrap: wrap; gap: 12px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="background: var(--color-terracotta); color: #fff; font-family: var(--font-heading); font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: var(--radius-pill);">MASTER CONSOLE</span>
-                    <h2 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 900; letter-spacing: 0.04em;">GLOBAL USER REGISTRY & DATA INTELLIGENCE</h2>
+        <div style="padding: 24px; display: grid; grid-template-columns: 320px 1fr; gap: 24px;" id="masterGrid">
+            <!-- Left: Users Directory -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 4px;" id="masterStatusFilterTabs">
+                    <button type="button" class="cadence-tab-btn active master-filter-btn" data-filter="all" style="flex: 1; text-align: center;">All</button>
+                    <button type="button" class="cadence-tab-btn master-filter-btn" data-filter="active" style="flex: 1; text-align: center;">Active</button>
+                    <button type="button" class="cadence-tab-btn master-filter-btn" data-filter="deleted" style="flex: 1; text-align: center; color: #ff7654;">Deleted</button>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <button type="button" class="btn-modal-action" id="btnRefreshMasterData" style="color: #fff; border-color: rgba(255,255,255,0.3); font-size: 0.76rem; display: flex; align-items: center; gap: 4px;">
-                        <span>🔄</span> Refresh Cloud Data
-                    </button>
-                    <button type="button" class="btn-modal-action" id="btnBackToLoginFromMaster" style="color: #fff; background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); font-size: 0.76rem; display: flex; align-items: center; gap: 4px;">
-                        <span>🚪</span> Back to Login
-                    </button>
-                    <button type="button" class="btn-modal-action primary" id="btnExitMasterConsole" style="font-size: 0.76rem;">
-                        ✕ Close Console
-                    </button>
+                <input type="text" id="masterUserSearchInput" class="auth-input" placeholder="🔍 Search user ID..." style="background: #1e293b; border-color: rgba(255,255,255,0.15); color: white;" />
+                <div id="masterUsersList" style="display: flex; flex-direction: column; gap: 6px; max-height: 480px; overflow-y: auto;">
+                    <!-- Dynamically populated user pills -->
                 </div>
             </div>
 
-            <!-- Master Console Metrics Bar -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 18px 24px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08);">
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 12px 16px;">
-                    <div style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.1em;">TOTAL REGISTERED USERS</div>
-                    <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: #ffffff;" id="metricTotalUsers">0</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 12px 16px;">
-                    <div style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.1em;">TOTAL TASKS CREATED</div>
-                    <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: #e9c46a;" id="metricTotalTasks">0</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 12px 16px;">
-                    <div style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.1em;">COMPLETED TASKS</div>
-                    <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: #2a9d8f;" id="metricCompletedTasks">0</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 12px 16px;">
-                    <div style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.1em;">GLOBAL COMPLETION RATE</div>
-                    <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: var(--color-terracotta);" id="metricAvgRate">0%</div>
-                </div>
-            </div>
-
-            <!-- Master Console Main Content (Users List + User Task Inspector) -->
-            <div style="padding: 20px 24px; display: grid; grid-template-columns: 320px 1fr; gap: 20px;" id="masterConsoleGrid">
-                <!-- Left: Users Directory -->
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-family: var(--font-heading); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.1em; color: rgba(255,255,255,0.7);">ALL USER PROFILES</span>
-                        <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5);" id="masterUserCountBadge">0 Users</span>
-                    </div>
-
-                    <!-- Filter Status Buttons -->
-                    <div style="display: flex; gap: 4px;" id="masterUserFilterTabs">
-                        <button type="button" class="btn-modal-action primary master-status-tab" data-filter="all" style="flex: 1; padding: 4px 8px; font-size: 0.7rem; text-align: center;">All</button>
-                        <button type="button" class="btn-modal-action secondary master-status-tab" data-filter="active" style="flex: 1; padding: 4px 8px; font-size: 0.7rem; text-align: center;">Active</button>
-                        <button type="button" class="btn-modal-action secondary master-status-tab" data-filter="deleted" style="flex: 1; padding: 4px 8px; font-size: 0.7rem; text-align: center; color: #ff7654;">Deleted</button>
-                    </div>
-
-                    <input type="text" id="masterUserSearchInput" class="form-input" placeholder="🔍 Search username..." style="background: #233139; border-color: rgba(255,255,255,0.15); color: #fff; font-size: 0.8rem; padding: 7px 10px;">
-                    <div id="masterUsersList" style="display: flex; flex-direction: column; gap: 6px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
-                        <!-- Dynamically populated user pills -->
-                    </div>
-                </div>
-
-                <!-- Right: Detailed User Inspector -->
-                <div style="background: #202d34; border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 14px;" id="masterUserInspector">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                        <div>
-                            <div style="font-size: 0.68rem; font-weight: 800; color: var(--color-terracotta); letter-spacing: 0.1em;">SELECTED USER PROFILE</div>
-                            <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 800; color: #fff;" id="inspectUserName">Select a user</h3>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 6px;" id="inspectUserStatsPill">
-                            <!-- User stats summary -->
-                        </div>
-                    </div>
-
-                    <!-- User Custom Plans Section -->
+            <!-- Right: Detailed User Inspector -->
+            <div class="surface-card" style="background: #1e293b; border-color: rgba(255,255,255,0.1); color: white;" id="masterUserInspector">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
                     <div>
-                        <span style="font-family: var(--font-heading); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; color: rgba(255,255,255,0.65);">USER CUSTOM PLANS / BLUEPRINTS</span>
-                        <div id="inspectUserPlans" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
-                            <span style="font-size: 0.76rem; color: rgba(255,255,255,0.4);">No custom plans created.</span>
-                        </div>
+                        <span class="badge-mono secondary" style="font-size: 10px;">SELECTED PROFILE</span>
+                        <h3 style="font-size: 20px; font-weight: 700; color: white;" id="inspectUserName">Select a user</h3>
                     </div>
+                    <div id="inspectUserStatsPill"></div>
+                </div>
 
-                    <!-- User Month Tasks Section -->
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-family: var(--font-heading); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; color: rgba(255,255,255,0.65);">TASK RECORDS ACROSS MONTHS & DAYS</span>
-                            <span style="font-size: 0.7rem; color: #2a9d8f; font-weight: 700;" id="inspectTaskTotalBadge">0 Tasks</span>
-                        </div>
-                        <div id="inspectUserTasksContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; padding-right: 4px;">
-                            <!-- Dynamically populated tasks by day and month with actual notes -->
-                        </div>
-                    </div>
+                <div style="margin-top: 12px;">
+                    <span style="font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.6);">CUSTOM BLUEPRINTS:</span>
+                    <div id="inspectUserPlans" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;"></div>
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <span style="font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.6);">TASK LEDGER ACROSS MONTHS:</span>
+                    <div id="inspectUserTasksContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; margin-top: 6px;"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase App & Realtime Database SDKs (Compat for Web & Mobile) -->
+    <!-- =========================================================================
+         4. MODALS & DRAWERS
+         ========================================================================= -->
+
+    <!-- Actuals / Note Detail Modal -->
+    <div class="modal-backdrop hidden" id="noteModalBackdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined text-secondary text-[22px]">edit_note</span>
+                    <h3 style="font-size: 16px; font-weight: 600;">Log Actuals & Task Detail</h3>
+                </div>
+                <button type="button" class="btn-close-modal" id="btnCloseNoteModal">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="font-size: 14px; font-weight: 600;" id="noteModalTaskName">Task Name</div>
+                <textarea id="taskNoteInput" class="auth-input" style="height: 80px; padding: 10px;" placeholder="e.g. Completed 95m block, or Drank 2.7L, or 6,500 steps..."></textarea>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="noteQuickPresets"></div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="topbar-btn" id="btnClearNote">Remove Note</button>
+                <button type="button" class="auth-btn-submit" id="btnSaveNote" style="width: auto; height: 36px; padding: 0 16px; margin: 0;">
+                    Save Detail
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Custom Plan Modal -->
+    <div class="modal-backdrop hidden" id="createPlanModalBackdrop">
+        <div class="modal-dialog" style="max-width: 600px;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined text-[22px]">add_circle</span>
+                    <h3 style="font-size: 16px; font-weight: 600;">Create Custom Habit Plan</h3>
+                </div>
+                <button type="button" class="btn-close-modal" id="btnCloseCreatePlanModal">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px; max-height: 60vh; overflow-y: auto; padding-right: 4px;">
+                <div>
+                    <label class="auth-label">Plan Name</label>
+                    <input type="text" id="newPlanNameInput" class="auth-input" placeholder="e.g. Marathon Prep Cycle or Q4 Deep Work" />
+                </div>
+                <div>
+                    <label class="auth-label">Short Description</label>
+                    <input type="text" id="newPlanDescInput" class="auth-input" placeholder="e.g. High-intensity conditioning & focus regimen" />
+                </div>
+                <div>
+                    <label class="auth-label">Habit Tasks in this Plan</label>
+                    <div id="newPlanTasksContainer" style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                        <!-- Task rows added dynamically -->
+                    </div>
+                    <button type="button" class="topbar-btn" id="btnAddNewPlanTaskRow" style="margin-top: 8px;">
+                        <span class="material-symbols-outlined text-[16px]">add</span>
+                        <span>Add Another Task</span>
+                    </button>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--color-divider); padding-top: 14px;">
+                <button type="button" class="topbar-btn" id="btnCancelCreatePlan">Cancel</button>
+                <button type="button" class="auth-btn-submit" id="btnSaveCustomPlan" style="width: auto; height: 36px; padding: 0 16px; margin: 0;">
+                    Save to Plan Library
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Shared Plan Modal -->
+    <div class="modal-backdrop hidden" id="importPlanModalBackdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined text-[22px]">download</span>
+                    <h3 style="font-size: 16px; font-weight: 600;">Import Shared Plan</h3>
+                </div>
+                <button type="button" class="btn-close-modal" id="btnCloseImportModal">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="font-size: 13px; color: var(--on-surface-variant);">Paste a Plan Share Code sent to you by another user:</p>
+                <textarea id="importPlanCodeInput" class="auth-input" style="height: 90px; padding: 10px;" placeholder="Paste Plan Code here..."></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="topbar-btn" id="btnCancelImport">Cancel</button>
+                <button type="button" class="auth-btn-submit" id="btnSubmitImportPlan" style="width: auto; height: 36px; padding: 0 16px; margin: 0;">
+                    Import Plan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Console Auth Prompt Modal -->
+    <div class="modal-backdrop hidden" id="masterAuthModalBackdrop">
+        <div class="modal-dialog" style="max-width: 400px; background: #0f172a; color: white;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined text-secondary text-[22px]">security</span>
+                    <h3 style="font-size: 16px; font-weight: 700; color: white;">Root Authentication</h3>
+                </div>
+                <button type="button" class="btn-close-modal" id="btnCloseMasterAuthModal" style="color: white;">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form class="auth-form" id="masterAuthForm" onsubmit="return false;" style="margin-top: 12px;">
+                <div>
+                    <label class="auth-label" style="color: rgba(255,255,255,0.8);">Admin ID</label>
+                    <input type="text" id="masterAdminIdInput" class="auth-input" style="background: #1e293b; border-color: rgba(255,255,255,0.15); color: white;" placeholder="Admin Identifier" required />
+                </div>
+                <div>
+                    <label class="auth-label" style="color: rgba(255,255,255,0.8);">Master Password</label>
+                    <input type="password" id="masterPasswordInput" class="auth-input" style="background: #1e293b; border-color: rgba(255,255,255,0.15); color: white;" placeholder="••••••••••••" required />
+                </div>
+                <div class="auth-error-banner hidden" id="masterAuthErrorBanner">
+                    <span class="material-symbols-outlined text-[16px]">error</span>
+                    <span>Invalid Root Credentials.</span>
+                </div>
+                <button type="submit" class="auth-btn-submit" id="btnSubmitMasterAuth" style="background: #10b981; color: #002113; font-weight: 600;">
+                    Confirm Root Access
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Firebase App & Database Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 
     <!-- Centralized Configuration & Text Registry -->
     <script src="config.js"></script>
+
+    <!-- Core Application Logic -->
     <script src="app.js"></script>
 </body>
 </html>
